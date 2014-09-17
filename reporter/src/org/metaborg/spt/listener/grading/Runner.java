@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.metaborg.sunshine.Environment;
 import org.metaborg.sunshine.drivers.SunshineMainArguments;
@@ -21,18 +24,34 @@ public class Runner {
 
 	public static void main(String[] args) {
 
-		register(Properties.getString("spt.esv")); 
-		runTests(Properties.getString("lang.esv"), Properties.getString("tests")); 
+		String project = "/Users/guwac/Cloud/git/in4303/grading/lab1/";
+		
+		int i = 0;
+		try {
+			Configuration config = new PropertiesConfiguration(project + "grading.properties");
+			
+			register(config.getString("spt.esv"));
+			for (String lang : config.getStringArray("lang.esv")) {			
+				System.out.println(project + lang);
+				i += runTests(project + lang, project + config.getString("tests"), config.getString("spt.builder")); 
+			}
+			
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			i = 1;
+		}
+		
+		System.exit(i);
 	}
 
-	public static void runTests(String language, String project) {
+	public static int runTests(String language, String project, String builder) {
 	
 		try {
 			FileUtils.deleteDirectory(new File(project+".cache"));
 		} catch (IOException e) {}
 	 
 		SunshineMainArguments params = new SunshineMainArguments();
-		params.builder = Properties.getString("spt.builder");
+		params.builder = builder;
 		params.filestobuildon = ".";
 		params.noanalysis = true;
 		
@@ -47,9 +66,9 @@ public class Runner {
 //					LanguageDiscoveryService.INSTANCE().languageFromArguments(params.languageArgs));
 		
 		if (new SunshineMainDriver().run() == 0) {
-			System.exit(0);
+			return 0;
 		} else {
-			System.exit(1);
+			return 1;
 		}
 	}
 
