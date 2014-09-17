@@ -8,6 +8,7 @@ import java.io.PushbackInputStream;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.metaborg.sunshine.Environment;
 import org.metaborg.sunshine.drivers.SunshineMainArguments;
@@ -28,16 +29,23 @@ public class Runner {
 		
 		int i = 0;
 		try {
-			CompositeConfiguration config = new CompositeConfiguration();
-			config.addConfiguration(new PropertiesConfiguration(project + "spt.properties"));
-			config.addConfiguration(new PropertiesConfiguration(project + "languages.properties"));
-			config.addConfiguration(new PropertiesConfiguration(project + "tests.properties"));
+			CompositeConfiguration testConfig = new CompositeConfiguration();
+			testConfig.addConfiguration(new PropertiesConfiguration(project + "spt.properties"));
+			testConfig.addConfiguration(new PropertiesConfiguration(project + "tests.properties"));
 			
-			register(config.getString("spt.esv"));
-			for (String lang : config.getStringArray("lang.esv")) {			
-				System.out.println(project + lang);
-				i += runTests(project + lang, project + config.getString("tests"), config.getString("spt.builder")); 
-			}
+			XMLConfiguration langConfig = new XMLConfiguration(project + "languages.xml");
+			
+			register(testConfig.getString("spt.esv"));
+			String lang = langConfig.getString("language[@esv]");			
+			
+			System.out.println(project + lang);
+			i += runTests(project + lang, project + testConfig.getString("tests"), testConfig.getString("spt.builder")); 
+			
+			for (Object variant: langConfig.getList("group.group.language[@esv]")) {
+				System.out.println(project + variant);
+				i += runTests(project + lang, project + testConfig.getString("tests"), testConfig.getString("spt.builder")); 
+			} 
+			
 			
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
