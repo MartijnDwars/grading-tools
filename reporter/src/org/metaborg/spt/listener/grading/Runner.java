@@ -9,10 +9,10 @@ public class Runner {
 
 	public static void main(String[] args) {
 
-		runTests("/Users/guwac/Cloud/git/in4303/grading/lab2/tests/");
+		runTests("/Users/guwac/Cloud/git/in4303/grading/lab1/grammars/MiniJava-correct", "/Users/guwac/Cloud/git/in4303/grading/lab2/tests/");
 	}
 
-	public static void runTests(String project) {
+	public static void runTests(String language, String project) {
 	
 		try {
 			FileUtils.deleteDirectory(new File(project+".cache"));
@@ -20,7 +20,7 @@ public class Runner {
 	 
 		org.metaborg.sunshine.drivers.Main.main(
 			new String[] { 
-				"--auto-lang", "/Users/guwac/Cloud/git/in4303/grading/lab1/grammars/MiniJava-correct",
+				"--auto-lang", language,
 				"--project", project,
 				"--builder", "testrunnerfile", "--build-on-all", ".", "--no-analysis"//, "--non-incremental"
 			});
