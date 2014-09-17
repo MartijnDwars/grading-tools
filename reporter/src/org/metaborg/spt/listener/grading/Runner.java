@@ -21,8 +21,8 @@ public class Runner {
 
 	public static void main(String[] args) {
 
-		register("/Users/guwac/Cloud/git/in4303/spt/org.strategoxt.imp.testing/include/Spoofax-Testing.packed.esv");
-		runTests("/Users/guwac/Cloud/git/in4303/grading/lab1/grammars/MiniJava-correct/MiniJava-correct.packed.esv", "/Users/guwac/Cloud/git/in4303/grading/lab2/tests/");
+		register(Properties.getString("spt.esv")); 
+		runTests(Properties.getString("lang.esv"), Properties.getString("tests")); 
 	}
 
 	public static void runTests(String language, String project) {
@@ -32,7 +32,7 @@ public class Runner {
 		} catch (IOException e) {}
 	 
 		SunshineMainArguments params = new SunshineMainArguments();
-		params.builder = "testrunnerfile";
+		params.builder = Properties.getString("spt.builder");
 		params.filestobuildon = ".";
 		params.noanalysis = true;
 		
@@ -64,7 +64,7 @@ public class Runner {
 			if (bufferSize != -1)
 				input.unread(buffer, 0, bufferSize);
 			
-			if ((bufferSize == 6 && new String(buffer).equals("Module"))) {
+			if ((bufferSize == 6 && new String(buffer).equals("Module"))) { 
 				TermReader reader = new TermReader(
 						new TermFactory().getFactoryWithStorageType(IStrategoTerm.MUTABLE));
 				document = (IStrategoAppl) reader.parseFromStream(input);
@@ -73,7 +73,7 @@ public class Runner {
 			ALanguage lang = LanguageDiscoveryService.INSTANCE().languageFromEsv(document, new File(esv).toPath().getParent().getParent());
 			LanguageService.INSTANCE().registerLanguage(lang);
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to load language", e);
+			throw new RuntimeException("Failed to load language", e); 
 		}
 	}
 }
