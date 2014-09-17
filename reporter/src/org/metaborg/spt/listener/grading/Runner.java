@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.FileUtils;
@@ -28,7 +28,10 @@ public class Runner {
 		
 		int i = 0;
 		try {
-			Configuration config = new PropertiesConfiguration(project + "grading.properties");
+			CompositeConfiguration config = new CompositeConfiguration();
+			config.addConfiguration(new PropertiesConfiguration(project + "spt.properties"));
+			config.addConfiguration(new PropertiesConfiguration(project + "languages.properties"));
+			config.addConfiguration(new PropertiesConfiguration(project + "tests.properties"));
 			
 			register(config.getString("spt.esv"));
 			for (String lang : config.getStringArray("lang.esv")) {			
