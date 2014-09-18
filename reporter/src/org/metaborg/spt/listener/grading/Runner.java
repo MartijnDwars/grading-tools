@@ -31,20 +31,20 @@ public class Runner {
 	public static void main(String[] args) {
 	
 		int i = 0;
-		final CompositeConfiguration testConfig = new CompositeConfiguration();
 		try {
-			final PropertiesConfiguration sptConfig = new PropertiesConfiguration("spt.properties");
-			
-			testConfig.addConfiguration(sptConfig);
-			testConfig.addConfiguration(new PropertiesConfiguration("tests.properties"));
-						
-			register(sptConfig.getFile().getParentFile().getPath() + "/" + testConfig.getString("spt.esv"));
-			final String tests = testConfig.getString("tests");
-			final String builder = testConfig.getString("spt.builder");
+			final PropertiesConfiguration sptConfig   = new PropertiesConfiguration("spt.properties");
+			final PropertiesConfiguration testsConfig = new PropertiesConfiguration("tests.properties");
+			final XMLConfiguration langConfig         = new XMLConfiguration("languages.xml");
 
-			XMLConfiguration langConfig = new XMLConfiguration("languages.xml");
+			final String sptDir   = sptConfig.getFile().getParentFile().getPath() + "/";
+			final String testsDir = testsConfig.getFile().getParentFile().getPath() + "/";
+			final String langDir  = langConfig.getFile().getParentFile().getPath() + "/";
 			
-			i += runGroup(langConfig.getFile().getParentFile().getPath(), langConfig, tests, builder); 
+			register(sptDir + sptConfig.getString("spt.esv"));
+			final String tests   = testsDir + testsConfig.getString("tests");
+			final String builder = sptConfig.getString("spt.builder");
+
+			i += runGroup(langDir, langConfig, tests, builder); 
 			
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
@@ -80,7 +80,7 @@ public class Runner {
 				}
 			}
 			
-			i += runTests(project + "/" + variant, tests, builder); 
+			i += runTests(project + variant, tests, builder); 
 			
 			for (Iterator<ITestReporter> reporters = TestReporterProvider.getInstance().getReporters(); reporters.hasNext();) {
 				ITestReporter reporter = reporters.next();
