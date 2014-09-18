@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PushbackInputStream;
+import java.util.Iterator;
 
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -11,6 +12,8 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FileUtils;
+import org.metaborg.spt.listener.ITestReporter;
+import org.metaborg.spt.listener.TestReporterProvider;
 import org.metaborg.sunshine.Environment;
 import org.metaborg.sunshine.drivers.SunshineMainArguments;
 import org.metaborg.sunshine.drivers.SunshineMainDriver;
@@ -27,8 +30,7 @@ public class Runner {
 	final static CompositeConfiguration testConfig = new CompositeConfiguration();
 	
 	public static void main(String[] args) {
-
-		
+	
 		int i = 0;
 		try {
 			testConfig.addConfiguration(new PropertiesConfiguration("spt.properties"));
@@ -47,6 +49,19 @@ public class Runner {
 			i = 1;
 		}
 		
+		for (Iterator<ITestReporter> reporters = TestReporterProvider.getInstance().getReporters(); reporters.hasNext();) {
+			ITestReporter reporter = reporters.next();
+			if (reporter instanceof Grader) {
+				Grader grader = (Grader) reporter;
+				final int valid = grader.getValid();
+				final int effective = grader.getEffective();
+				System.out.println("valid " + valid);
+				System.out.println("invalid " + grader.getInvalid());
+				System.out.println("effective " + effective);
+				System.out.println("ineffective " + (valid-effective));
+			}
+		}
+		
 		System.exit(i);
 	}
 	
@@ -54,9 +69,15 @@ public class Runner {
 			final String tests, final String builder) {
 		
 		int i = 0;
-		for (Object variant: config.getList("language[@esv]")) {
+		for (String variant: config.getStringArray("language[@esv]")) {
 			System.out.println(project + variant);
-			i += runTests(project + "/" + variant, tests, builder); 
+			for (Iterator<ITestReporter> reporters = TestReporterProvider.getInstance().getReporters(); reporters.hasNext();) {
+				ITestReporter reporter = reporters.next();
+				if (reporter instanceof Grader) {
+					Grader grader = (Grader) reporter;
+					grader.setLanguage(variant);
+				}
+			}i += runTests(project + "/" + variant, tests, builder); 
 		}
 		int g = 0;
 		for (Object group: config.getList("group[@name]")) {
