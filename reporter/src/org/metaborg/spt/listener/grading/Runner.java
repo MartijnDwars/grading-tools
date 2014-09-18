@@ -70,14 +70,26 @@ public class Runner {
 		
 		int i = 0;
 		for (String variant: config.getStringArray("language[@esv]")) {
-			System.out.println(project + variant);
 			for (Iterator<ITestReporter> reporters = TestReporterProvider.getInstance().getReporters(); reporters.hasNext();) {
 				ITestReporter reporter = reporters.next();
 				if (reporter instanceof Grader) {
 					Grader grader = (Grader) reporter;
 					grader.setLanguage(variant);
 				}
-			}i += runTests(project + "/" + variant, tests, builder); 
+			}
+			
+			i += runTests(project + "/" + variant, tests, builder); 
+			
+			for (Iterator<ITestReporter> reporters = TestReporterProvider.getInstance().getReporters(); reporters.hasNext();) {
+				ITestReporter reporter = reporters.next();
+				if (reporter instanceof Grader) {
+					Grader grader = (Grader) reporter;
+					if (grader.isDetected())
+						System.out.println("detected " + project + variant);
+					else
+						System.out.println("undetected " + project + variant);
+				}
+			}
 		}
 		int g = 0;
 		for (Object group: config.getList("group[@name]")) {

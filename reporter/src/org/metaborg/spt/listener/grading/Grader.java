@@ -26,7 +26,6 @@ public class Grader implements ITestReporter {
 
 	@Override
 	public void addTestsuite(String name, String filename) throws Exception {
-		logger.error(filename);
 	}
 
 	@Override
@@ -50,6 +49,7 @@ public class Grader implements ITestReporter {
 		else if (valid.get(key) && !succeeded) {
 			effective.put(key, true);
 			detected = true;
+			logger.error(key + "revealed erroneous variant");
 		}
 	}
 	
@@ -75,5 +75,9 @@ public class Grader implements ITestReporter {
 
 	public void setLanguage(String variant) {
 		detected  = false;
+	}
+	
+	public boolean isDetected() {
+		return detected;
 	}
 }
