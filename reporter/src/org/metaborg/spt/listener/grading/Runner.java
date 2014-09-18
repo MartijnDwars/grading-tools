@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.util.Iterator;
 
-import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -31,6 +30,8 @@ public class Runner {
 	public static void main(String[] args) {
 	
 		int i = 0;
+		final int[] detection = new int[]{0, 0};
+		
 		try {
 			final PropertiesConfiguration sptConfig   = new PropertiesConfiguration("spt.properties");
 			final PropertiesConfiguration testsConfig = new PropertiesConfiguration("tests.properties");
@@ -44,7 +45,7 @@ public class Runner {
 			final String tests   = testsDir + testsConfig.getString("tests");
 			final String builder = sptConfig.getString("spt.builder");
 
-			i += runGroup(langDir, langConfig, tests, builder); 
+			i += runGroup(langDir, langConfig, tests, builder, detection); 
 			
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
@@ -61,6 +62,8 @@ public class Runner {
 				System.out.println("invalid " + grader.getInvalid());
 				System.out.println("effective " + effective);
 				System.out.println("ineffective " + (valid-effective));
+				System.out.println("detected " + detection[0]);
+				System.out.println("undetected " + detection[1]);
 			}
 		}
 		
@@ -68,7 +71,7 @@ public class Runner {
 	}
 	
 	public static int runGroup(String project, HierarchicalConfiguration config,
-			final String tests, final String builder) {
+			final String tests, final String builder, final int[] detection) {
 		
 		int i = 0;
 		for (String variant: config.getStringArray("language[@esv]")) {
@@ -87,16 +90,20 @@ public class Runner {
 				if (reporter instanceof Grader) {
 					Grader grader = (Grader) reporter;
 					if (grader.isDetected())
-						System.out.println("detected " + project + variant);
-					else
-						System.out.println("undetected " + project + variant);
+						detection[0]++;
+					else detection[1]++;
 				}
 			}
 		}
+		
 		int g = 0;
 		for (Object group: config.getList("group[@name]")) {
-			System.out.println("Group " + group);
-			i += runGroup(project, config.configurationAt("group(" + g++ +")"), tests, builder);
+			final int[] inner = new int[]{0, 0};
+			i += runGroup(project, config.configurationAt("group(" + g++ +")"), tests, builder, inner);
+			detection[0] += inner[0];
+			detection[1] += inner[1];
+			System.out.println("You detected " + inner[0] + " erroneous grammars for " + group);
+			System.out.println("You missed " + inner[1] + " erroneous grammars for " + group);
 		}
 		return i;
 	}
