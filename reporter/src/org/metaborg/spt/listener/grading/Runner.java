@@ -27,16 +27,18 @@ import org.spoofax.terms.io.binary.TermReader;
 
 public class Runner {
 
-	final static CompositeConfiguration testConfig = new CompositeConfiguration();
 	
 	public static void main(String[] args) {
 	
 		int i = 0;
+		final CompositeConfiguration testConfig = new CompositeConfiguration();
 		try {
-			testConfig.addConfiguration(new PropertiesConfiguration("spt.properties"));
+			final PropertiesConfiguration sptConfig = new PropertiesConfiguration("spt.properties");
+			
+			testConfig.addConfiguration(sptConfig);
 			testConfig.addConfiguration(new PropertiesConfiguration("tests.properties"));
 						
-			register(testConfig.getString("spt.esv"));
+			register(sptConfig.getFile().getParentFile().getPath() + "/" + testConfig.getString("spt.esv"));
 			final String tests = testConfig.getString("tests");
 			final String builder = testConfig.getString("spt.builder");
 
