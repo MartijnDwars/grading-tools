@@ -97,7 +97,7 @@ public class GitHubFetcher {
 		}
 	}
 
-	private GradeReport gradePullRequest(PullRequest pullRequest) {
+	private GradeReport gradePullRequest(PullRequest pullRequest, IReporter reporter) {
 		try {
 			File tmpDir = createTemporaryDirectory();
 
@@ -117,17 +117,12 @@ public class GitHubFetcher {
 					.call();
 
 			// execute a test program to get a report back
-			GroupRunner runner = new GroupRunner("languages.xml", new File(tmpDir, "MiniJava-tests"));
-
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			runner.run(stream);
-
-			// end test
-
+			GradeReport report = reporter.getReport();
+			
 			// close the repo
 			tmpRepo.close();
 
-			return new GradeReport(pullRequest, GradeReport.Status.SUCCESS, stream.toString());
+			return report;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (GitAPIException e) {
