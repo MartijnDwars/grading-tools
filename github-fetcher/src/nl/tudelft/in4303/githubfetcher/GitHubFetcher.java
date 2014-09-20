@@ -1,9 +1,11 @@
 package nl.tudelft.in4303.githubfetcher;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +26,7 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FileUtils;
+import org.metaborg.spt.listener.grading.GroupRunner;
 
 public class GitHubFetcher {
 	private PullRequestService pullRequestService;
@@ -114,25 +117,17 @@ public class GitHubFetcher {
 					.call();
 
 			// execute a test program to get a report back
-			Process lsProcess = Runtime.getRuntime().exec("ls",
-					new String[] {}, tmpDir);
-			BufferedReader output = new BufferedReader(new InputStreamReader(
-					lsProcess.getInputStream()));
-			String line;
-			String report = "";
-			while ((line = output.readLine()) != null) {
-				report += line + System.lineSeparator();
-			}
-			try {
-				lsProcess.waitFor();
-			} catch (InterruptedException e) {
-			}
+			GroupRunner runner = new GroupRunner("languages.xml", new File(tmpDir, "MiniJava-tests"));
+
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			runner.run(stream);
+
 			// end test
 
 			// close the repo
 			tmpRepo.close();
 
-			return new GradeReport(pullRequest, GradeReport.Status.SUCCESS, report);
+			return new GradeReport(pullRequest, GradeReport.Status.SUCCESS, stream.toString());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (GitAPIException e) {
