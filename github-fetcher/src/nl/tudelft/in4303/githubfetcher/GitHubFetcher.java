@@ -26,7 +26,6 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FileUtils;
-import org.metaborg.spt.listener.grading.GroupRunner;
 
 public class GitHubFetcher {
 	private PullRequestService pullRequestService;
@@ -117,7 +116,7 @@ public class GitHubFetcher {
 					.call();
 
 			// execute a test program to get a report back
-			GradeReport report = reporter.getReport();
+			GradeReport report = reporter.getReport(tmpDir);
 			
 			// close the repo
 			tmpRepo.close();
