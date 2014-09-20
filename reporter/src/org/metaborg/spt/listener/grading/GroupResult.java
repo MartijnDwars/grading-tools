@@ -40,29 +40,28 @@ class GroupResult {
 	
 	public void finishedGrading(PrintStream stream, TestGrader grader) {
 		
-		report("# ", stream);
+		report(" ", stream);
 		
-		stream.println("## Summary");
+		stream.println("# Summary");
 		stream.println();
 		
 		stream.println("You score currently " + points + " points.");
 		stream.println();
 		stream.println("You have " + grader.getValid() + " valid tests.");
-		stream.println("You have " + grader.getInvalid() + " valid tests.");
-		stream.println(grader.getEffective() + " of your valid tests detected erroneous grammars.");
-		stream.println("You detected " + detected + " erroneous grammars.");
-		stream.println("You missed " + missed + " erroneous grammars.");
+//		stream.println("You have " + grader.getInvalid() + " invalid tests.");
+		stream.println(grader.getEffective() + " of your valid tests detected " + detected + " erroneous grammars.");
+//		stream.println("You missed " + missed + " erroneous grammars.");
 	}
 
 	public void report(String header, PrintStream stream) {
 
+		stream.println(header + name);
+		stream.println();
+		
 		if (detected == 0) {
 			stream.println("You missed all erroneous grammars.");
 			return;
 		}
-		
-		stream.println(header + name);
-		stream.println();
 		
 		if (missed == 0) {
 			stream.println("You detected all erroneous grammars.");
@@ -84,10 +83,10 @@ class GroupResult {
 		double ratio = detected / missed;
 		
 		if (ratio >= 3.0) 
-			return "You detected most erroneous grammars.";
+			return "You detected many erroneous grammars.";
 
 		if (ratio < 0.33) 
-			return "You missed most erroneous grammars.";
+			return "You missed many erroneous grammars.";
 
 		if (detected > missed)
 			return "You detected more erroneous grammars than you missed.";
