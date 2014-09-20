@@ -80,6 +80,7 @@ public class TestsRunner implements IRunner {
 			result.setStatus(Status.SUCCESS);
 
 		} catch (Exception e) {
+			System.err.println(e);
 			result.setStatus(Status.ERROR);
 		}
 		return result;
