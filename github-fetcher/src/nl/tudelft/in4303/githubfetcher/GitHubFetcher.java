@@ -70,22 +70,17 @@ public class GitHubFetcher {
 			for (PullRequest pullRequest : openPullRequests) {
 				if (!pullRequestIsGraded(pullRequest)) {
 					IReporter grader = this.graders.get(pullRequest.getBase().getRef());
-					if (pullRequest.isMergeable()) {
+					if (grader != null) {
 						setStatusPending(pullRequest);
+						System.out.println(String.format("Started grading pull request %s of user %s", pullRequest.getTitle(), pullRequest.getUser().getLogin()));
 						gradeReports.add(gradePullRequest(pullRequest, grader));
-					} else {
-						String report = "**Auto-generated comment**"
-								+ System.lineSeparator()
-								+ System.lineSeparator()
-								+ "The commits are not mergeable with the base, please merge manually and try again.";
-						GradeReport notMergeableReport = new GradeReport(
-								pullRequest, GradeReport.Status.ERROR, report);
-						gradeReports.add(notMergeableReport);
 					}
+					// TODO: mention if there is no grader on this branch?
 				}
 			}
 
 			for (GradeReport report : gradeReports) {
+				System.out.println(String.format("Uploading report to pull-request %s of user %s (%s)", report.getPullRequest().getTitle(), report.getPullRequest().getUser().getLogin(), report.getStatus().toString()));
 				uploadReportAndStatus(report);
 			}
 		} catch (IOException e) {
