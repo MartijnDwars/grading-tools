@@ -1,4 +1,4 @@
-package org.metaborg.spt.listener.grading;
+package nl.tudelft.in4303.grading.tests;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,7 +9,7 @@ import org.metaborg.spt.listener.ITestReporter;
  * @author guwac
  *
  */
-public class TestGrader implements ITestReporter {
+public class TestsListener implements ITestReporter {
 	
 	private final HashSet<String> valid       = new HashSet<String>(500);
 	private final HashSet<String> invalid     = new HashSet<String>(500);
@@ -56,6 +56,10 @@ public class TestGrader implements ITestReporter {
 	
 	public void init() {
 		init = true;
+		valid.clear();
+		invalid.clear();
+		effective.clear();
+		ineffective.clear();
 	}
 	
 	public boolean newLanguage() {

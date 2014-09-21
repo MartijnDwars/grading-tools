@@ -1,4 +1,4 @@
-package org.metaborg.spt.listener.grading;
+package nl.tudelft.in4303.grading;
 
 import java.io.File;
 import java.io.FileInputStream;

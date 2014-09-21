@@ -1,13 +1,12 @@
 package nl.tudelft.in4303.githubfetcher;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.egit.github.core.PullRequest;
@@ -32,6 +31,8 @@ public class GitHubFetcher {
 	private ExtendedCommitService commitService;
 	private IssueService issueService;
 	private CredentialsProvider credentialsProvider;
+	
+	private HashMap<String, IReporter> graders;
 
 	public GitHubFetcher(String username, String password) {
 		GitHubClient client = new GitHubClient();
@@ -43,6 +44,12 @@ public class GitHubFetcher {
 		pullRequestService = new PullRequestService(client);
 		commitService = new ExtendedCommitService(client);
 		issueService = new IssueService(client);
+		
+		this.graders = new HashMap<String, IReporter>();
+	}
+	
+	public void registerGrader(String exercise, IReporter reporter) {
+		this.graders.put(exercise, reporter);
 	}
 
 	public void run() {
@@ -61,11 +68,11 @@ public class GitHubFetcher {
 			// Grade all the pull requests
 			List<GradeReport> gradeReports = new ArrayList<GradeReport>();
 			for (PullRequest pullRequest : openPullRequests) {
-				if (!pullRequestIsGraded(pullRequest)
-						&& "assignment1".equals(pullRequest.getBase().getRef())) {
+				if (!pullRequestIsGraded(pullRequest)) {
+					IReporter grader = this.graders.get(pullRequest.getBase().getRef());
 					if (pullRequest.isMergeable()) {
 						setStatusPending(pullRequest);
-						gradeReports.add(gradePullRequest(pullRequest));
+						gradeReports.add(gradePullRequest(pullRequest, grader));
 					} else {
 						String report = "**Auto-generated comment**"
 								+ System.lineSeparator()
@@ -117,7 +124,7 @@ public class GitHubFetcher {
 		}
 	}
 
-	private GradeReport gradePullRequest(PullRequest pullRequest) {
+	private GradeReport gradePullRequest(PullRequest pullRequest, IReporter reporter) {
 		try {
 			File tmpDir = createTemporaryDirectory();
 
@@ -137,26 +144,12 @@ public class GitHubFetcher {
 					.call();
 
 			// execute a test program to get a report back
-			Process lsProcess = Runtime.getRuntime().exec("ls",
-					new String[] {}, tmpDir);
-			BufferedReader output = new BufferedReader(new InputStreamReader(
-					lsProcess.getInputStream()));
-			String line;
-			String report = "";
-			while ((line = output.readLine()) != null) {
-				report += line + System.lineSeparator();
-			}
-			try {
-				lsProcess.waitFor();
-			} catch (InterruptedException e) {
-			}
-			// end test
-
+			GradeReport report = reporter.getReport(tmpDir);
+			
 			// close the repo
 			tmpRepo.close();
-
-			return new GradeReport(pullRequest, GradeReport.Status.SUCCESS,
-					report);
+			
+			return new GradeReport(pullRequest, report.getStatus(), report.getReport());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (GitAPIException e) {
