@@ -44,9 +44,6 @@ public class TestsRunner implements IRunner {
 		listener = (TestsListener) reporter;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.tudelft.in4303.grading.tests.IRunner#run()
-	 */
 	@Override
 	public TestsResult run() {
 
@@ -54,8 +51,14 @@ public class TestsRunner implements IRunner {
 		return runTests(config);
 	}
 
-	private TestsResult runTests(HierarchicalConfiguration config) {
+	public TestsResult check() {
 
+		listener.init();
+		return runLanguages(config);
+	}
+
+	private TestsResult runLanguages(HierarchicalConfiguration config) {
+		
 		TestsResult result = new TestsResult(config.getString("[@name]", ""),
 				listener);
 
@@ -73,6 +76,21 @@ public class TestsRunner implements IRunner {
 				result.finishedLanguage(listener.newLanguage(),
 						langConf.getDouble("[@points]", 1));
 			}
+			
+			result.setStatus(Status.SUCCESS);
+
+		} catch (Exception e) {
+			System.err.println(e);
+			result.setStatus(Status.ERROR);
+		}
+		
+		return result;
+	}
+	private TestsResult runTests(HierarchicalConfiguration config) {
+
+		TestsResult result = runLanguages(config);
+
+		try {
 
 			for (Object group : config.configurationsAt("group"))
 				result.finishedGroup(runTests((HierarchicalConfiguration) group));

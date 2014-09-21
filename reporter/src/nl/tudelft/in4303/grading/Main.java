@@ -12,12 +12,17 @@ public class Main {
 	public static void main(String[] args) {
 
 		try {
-			IRunner runner = new TestsRunner(
-					new File(new PropertiesConfiguration("tests.properties").getString("repo"))
-			);
-
-			System.out.println(runner.run().getReport());
+						
+			PropertiesConfiguration config = new PropertiesConfiguration("tests.properties");
 			
+			for (String repo : config.getStringArray("repo")) {
+
+				System.out.println(repo);
+				System.out.println();
+				
+				IRunner runner = new TestsRunner(new File(repo));
+				System.out.println(runner.run().getReport());
+			}
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
 			System.exit(1);

@@ -56,6 +56,10 @@ public class TestsListener implements ITestReporter {
 	
 	public void init() {
 		init = true;
+		valid.clear();
+		invalid.clear();
+		effective.clear();
+		ineffective.clear();
 	}
 	
 	public boolean newLanguage() {

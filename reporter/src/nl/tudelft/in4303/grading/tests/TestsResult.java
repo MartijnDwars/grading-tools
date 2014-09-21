@@ -48,7 +48,8 @@ public class TestsResult implements IResult {
 	
 	public String getReport() {
 		
-		PrintStream stream = new PrintStream(new ByteArrayOutputStream());
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		PrintStream stream = new PrintStream(output);
 		report(" ", stream);
 		
 		stream.println("# Summary");
@@ -61,7 +62,7 @@ public class TestsResult implements IResult {
 		stream.println(listener.getEffective() + " of your valid tests detected " + detected + " erroneous language definitions.");
 //		stream.println("You missed " + missed + " erroneous language definitions.");
 	
-		return stream.toString();
+		return output.toString();
 	}
 
 	private void report(String header, PrintStream stream) {
