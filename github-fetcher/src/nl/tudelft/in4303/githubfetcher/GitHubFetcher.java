@@ -7,9 +7,8 @@ import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
@@ -26,6 +25,8 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FileUtils;
 
 public class GitHubFetcher {
+	private static final String GRADING_CONTEXT = "grading/in4303";
+
 	private PullRequestService pullRequestService;
 	private RepositoryService repoService;
 	private ExtendedCommitService commitService;
@@ -48,13 +49,39 @@ public class GitHubFetcher {
 		try {
 			List<Repository> orgRepositories = repoService
 					.getOrgRepositories("TUDelft-IN4303");
-			orgRepositories.parallelStream()
-					.filter(GitHubFetcher::isStudentRepository)
-					.flatMap(this::getOpenPullRequests)
-					.filter(this::pullRequestIsNotGraded)
-					.map(this::gradePullRequest)
-					.forEach(this::uploadReportAndStatus);
-		} catch (Exception e) {
+
+			// Retrieve all open pull requests
+			List<PullRequest> openPullRequests = new ArrayList<PullRequest>();
+			for (Repository repo : orgRepositories) {
+				if (isStudentRepository(repo)) {
+					openPullRequests.addAll(getOpenPullRequests(repo));
+				}
+			}
+
+			// Grade all the pull requests
+			List<GradeReport> gradeReports = new ArrayList<GradeReport>();
+			for (PullRequest pullRequest : openPullRequests) {
+				if (!pullRequestIsGraded(pullRequest)
+						&& "assignment1".equals(pullRequest.getBase().getRef())) {
+					if (pullRequest.isMergeable()) {
+						setStatusPending(pullRequest);
+						gradeReports.add(gradePullRequest(pullRequest));
+					} else {
+						String report = "**Auto-generated comment**"
+								+ System.lineSeparator()
+								+ System.lineSeparator()
+								+ "The commits are not mergeable with the base, please merge manually and try again.";
+						GradeReport notMergeableReport = new GradeReport(
+								pullRequest, GradeReport.Status.ERROR, report);
+						gradeReports.add(notMergeableReport);
+					}
+				}
+			}
+
+			for (GradeReport report : gradeReports) {
+				uploadReportAndStatus(report);
+			}
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -63,34 +90,30 @@ public class GitHubFetcher {
 		return repo.getName().matches("^student-(.*)$");
 	}
 
-	private Stream<PullRequest> getOpenPullRequests(Repository repo) {
-		try {
-			return pullRequestService.getPullRequests(repo, "open").stream();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	private List<PullRequest> getOpenPullRequests(Repository repo)
+			throws IOException {
+		return pullRequestService.getPullRequests(repo, "open");
 	}
 
-	private boolean hasGradingContext(ExtendedCommitStatus status) {
-		return "grading/in4303".equals(status.getContext());
-	}
+	private boolean pullRequestIsGraded(PullRequest pullRequest)
+			throws IOException {
+		List<CombinedCommitState> combinedStates = commitService
+				.getCombinedStatus(pullRequest.getBase().getRepo(), pullRequest
+						.getHead().getSha());
 
-	private boolean pullRequestIsNotGraded(PullRequest pullRequest) {
-		try {
-			Optional<ExtendedCommitStatus> gradingStatus = commitService
-					.getCombinedStatus(pullRequest.getBase().getRepo(),
-							pullRequest.getHead().getSha()).get(0)
-					.getStatuses().stream().filter(this::hasGradingContext)
-					.findFirst();
-
-			if (gradingStatus.isPresent()) {
-				String state = gradingStatus.get().getState();
-				return "pending".equals(state);
-			} else {
-				return true;
+		ExtendedCommitStatus gradingStatus = null;
+		for (CombinedCommitState state : combinedStates) {
+			for (ExtendedCommitStatus status : state.getStatuses()) {
+				if (GRADING_CONTEXT.equals(status.getContext())) {
+					gradingStatus = status;
+				}
 			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		}
+
+		if (gradingStatus == null) {
+			return false;
+		} else {
+			return !"pending".equals(gradingStatus.getState());
 		}
 	}
 
@@ -132,7 +155,8 @@ public class GitHubFetcher {
 			// close the repo
 			tmpRepo.close();
 
-			return new GradeReport(pullRequest, GradeReport.Status.SUCCESS, report);
+			return new GradeReport(pullRequest, GradeReport.Status.SUCCESS,
+					report);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (GitAPIException e) {
@@ -140,11 +164,20 @@ public class GitHubFetcher {
 		}
 	}
 
-	private void uploadReportAndStatus(GradeReport report) {
+	private void setStatusPending(PullRequest pullRequest) throws IOException {
+		ExtendedCommitStatus status = new ExtendedCommitStatus();
+		status.setState("pending");
+		status.setDescription("The assignment is being graded.");
+		status.setContext(GRADING_CONTEXT);
+		commitService.createStatus(pullRequest.getBase().getRepo(), pullRequest
+				.getHead().getSha(), status);
+	}
+
+	private void uploadReportAndStatus(GradeReport report) throws IOException {
 		PullRequest pullRequest = report.getPullRequest();
 		ExtendedCommitStatus status = new ExtendedCommitStatus();
-		
-		switch(report.getStatus()) {
+
+		switch (report.getStatus()) {
 		case SUCCESS:
 			status.setState("success");
 			status.setDescription("The assignment was graded with a PASS.");
@@ -159,18 +192,17 @@ public class GitHubFetcher {
 			status.setDescription("An error occurred while grading the assignment.");
 			break;
 		}
-		status.setContext("grading/in4303");
-		
-		try {
-			commitService.createStatus(pullRequest.getBase().getRepo(), pullRequest.getHead().getSha(), status);
-			
-			String comment = "*Auto-generated comment*" + System.lineSeparator() + System.lineSeparator() + report.getReport();
-			issueService.createComment(pullRequest.getBase().getRepo(), pullRequest.getNumber(), comment);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		status.setContext(GRADING_CONTEXT);
+
+		commitService.createStatus(pullRequest.getBase().getRepo(), pullRequest
+				.getHead().getSha(), status);
+
+		String comment = "*Auto-generated comment*" + System.lineSeparator()
+				+ System.lineSeparator() + report.getReport();
+		issueService.createComment(pullRequest.getBase().getRepo(),
+				pullRequest.getNumber(), comment);
 	}
-	
+
 	private File createTemporaryDirectory() throws IOException {
 		Path currentDir = FileSystems.getDefault().getPath(".");
 		Path tmpDirPath = Files.createTempDirectory(currentDir, "in4303-");
