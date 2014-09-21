@@ -1,4 +1,4 @@
-package nl.tudelft.in4303.githubfetcher;
+package nl.tudelft.in4303.grading.github;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +8,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import nl.tudelft.in4303.grading.IResult;
+import nl.tudelft.in4303.grading.IGrader;
 
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
@@ -23,7 +26,7 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FileUtils;
 
-public class GitHubFetcher {
+public class GitHubGrader {
 	private static final String GRADING_CONTEXT = "grading/in4303";
 
 	private PullRequestService pullRequestService;
@@ -32,9 +35,9 @@ public class GitHubFetcher {
 	private IssueService issueService;
 	private CredentialsProvider credentialsProvider;
 	
-	private HashMap<String, IReporter> graders;
+	private HashMap<String, IGrader> graders;
 
-	public GitHubFetcher(String username, String password) {
+	public GitHubGrader(String username, String password) {
 		GitHubClient client = new GitHubClient();
 		client.setCredentials(username, password);
 		credentialsProvider = new UsernamePasswordCredentialsProvider(username,
@@ -45,11 +48,11 @@ public class GitHubFetcher {
 		commitService = new ExtendedCommitService(client);
 		issueService = new IssueService(client);
 		
-		this.graders = new HashMap<String, IReporter>();
+		this.graders = new HashMap<String, IGrader>();
 	}
 	
-	public void registerGrader(String exercise, IReporter reporter) {
-		this.graders.put(exercise, reporter);
+	public void registerRunner(String exercise, IGrader runner) {
+		this.graders.put(exercise, runner);
 	}
 
 	public void run() {
@@ -66,22 +69,20 @@ public class GitHubFetcher {
 			}
 
 			// Grade all the pull requests
-			List<GradeReport> gradeReports = new ArrayList<GradeReport>();
 			for (PullRequest pullRequest : openPullRequests) {
 				if (!pullRequestIsGraded(pullRequest)) {
-					IReporter grader = this.graders.get(pullRequest.getBase().getRef());
+					IGrader grader = this.graders.get(pullRequest.getBase().getRef());
 					if (grader != null) {
 						setStatusPending(pullRequest);
+						
 						System.out.println(String.format("Started grading pull request %s of user %s", pullRequest.getTitle(), pullRequest.getUser().getLogin()));
-						gradeReports.add(gradePullRequest(pullRequest, grader));
+						IResult report = gradePullRequest(pullRequest, grader);
+						
+						System.out.println(String.format("Uploading report to pull-request %s of user %s (%s)", pullRequest.getTitle(), pullRequest.getUser().getLogin(), report.getStatus().toString()));
+						uploadReportAndStatus(pullRequest, report);
 					}
 					// TODO: mention if there is no grader on this branch?
 				}
-			}
-
-			for (GradeReport report : gradeReports) {
-				System.out.println(String.format("Uploading report to pull-request %s of user %s (%s)", report.getPullRequest().getTitle(), report.getPullRequest().getUser().getLogin(), report.getStatus().toString()));
-				uploadReportAndStatus(report);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -119,7 +120,7 @@ public class GitHubFetcher {
 		}
 	}
 
-	private GradeReport gradePullRequest(PullRequest pullRequest, IReporter reporter) {
+	private IResult gradePullRequest(PullRequest pullRequest, IGrader grader) {
 		try {
 			File tmpDir = createTemporaryDirectory();
 
@@ -139,12 +140,12 @@ public class GitHubFetcher {
 					.call();
 
 			// execute a test program to get a report back
-			GradeReport report = reporter.getReport(tmpDir);
+			IResult report = grader.grade(tmpDir);
 			
 			// close the repo
 			tmpRepo.close();
 			
-			return new GradeReport(pullRequest, report.getStatus(), report.getReport());
+			return report;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (GitAPIException e) {
@@ -161,8 +162,7 @@ public class GitHubFetcher {
 				.getHead().getSha(), status);
 	}
 
-	private void uploadReportAndStatus(GradeReport report) throws IOException {
-		PullRequest pullRequest = report.getPullRequest();
+	private void uploadReportAndStatus(PullRequest pullRequest, IResult report) throws IOException {
 		ExtendedCommitStatus status = new ExtendedCommitStatus();
 
 		switch (report.getStatus()) {

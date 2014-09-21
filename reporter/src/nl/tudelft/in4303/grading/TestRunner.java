@@ -23,23 +23,26 @@ public class TestRunner {
 
 	private final File dir;
 	private final File cache;
-	private final String builder;
+	private static String builder;
 	private final SunshineMainArguments params = new SunshineMainArguments();
 	private final Environment env = Environment.INSTANCE();
 
-	public TestRunner(File dir) throws ConfigurationException {
+	public TestRunner(File dir) {
 
 		this.dir = dir;
 		this.cache = new File(dir, ".cache");
-
-		final PropertiesConfiguration sptConfig = new PropertiesConfiguration(
-				"spt.properties");
-
-		this.builder = sptConfig.getString("spt.builder");
-		
-		final File spt = new File(sptConfig.getFile().getParentFile(),
-				sptConfig.getString("spt.esv"));
-		registerLanguage(spt);
+		if (builder == null) {
+			try {
+				PropertiesConfiguration sptConfig = new PropertiesConfiguration(
+						"spt.properties");
+				builder = sptConfig.getString("spt.builder");
+				final File spt = new File(sptConfig.getFile().getParentFile(),
+						sptConfig.getString("spt.esv"));
+				registerLanguage(spt);
+			} catch (ConfigurationException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public int runTests() {

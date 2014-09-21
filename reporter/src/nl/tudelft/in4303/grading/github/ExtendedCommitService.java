@@ -1,4 +1,4 @@
-package nl.tudelft.in4303.githubfetcher;
+package nl.tudelft.in4303.grading.github;
 
 import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_REPOS;
 import static org.eclipse.egit.github.core.client.IGitHubConstants.SEGMENT_STATUSES;

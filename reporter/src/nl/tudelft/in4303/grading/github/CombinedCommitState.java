@@ -1,4 +1,4 @@
-package nl.tudelft.in4303.githubfetcher;
+package nl.tudelft.in4303.grading.github;
 
 import java.util.List;
 

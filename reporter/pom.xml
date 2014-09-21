@@ -36,5 +36,15 @@
   		<artifactId>commons-io</artifactId>
   		<version>2.4</version>
   	</dependency>
+  	  	<dependency>
+  		<groupId>org.eclipse.mylyn.github</groupId>
+  		<artifactId>org.eclipse.egit.github.core</artifactId>
+  		<version>2.1.5</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.eclipse.jgit</groupId>
+  		<artifactId>org.eclipse.jgit</artifactId>
+  		<version>3.5.0.201409071800-rc1</version>
+  	</dependency>
   </dependencies>
 </project>

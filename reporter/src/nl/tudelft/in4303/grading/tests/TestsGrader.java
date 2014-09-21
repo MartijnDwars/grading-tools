@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Iterator;
 
 import nl.tudelft.in4303.grading.IResult.Status;
-import nl.tudelft.in4303.grading.IRunner;
+import nl.tudelft.in4303.grading.IGrader;
 import nl.tudelft.in4303.grading.TestRunner;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -13,22 +13,20 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.metaborg.spt.listener.ITestReporter;
 import org.metaborg.spt.listener.TestReporterProvider;
 
-public class TestsRunner implements IRunner {
+public class TestsGrader implements IGrader {
 
 	private final XMLConfiguration config;
-	private final TestRunner runner;
 	private final File project;
 	private final TestsListener listener;
 
-	public TestsRunner(File repo) {
-		this("languages.xml", new File(repo, "MiniJava-tests"));
+	public TestsGrader() {
+		this("languages.xml");
 	}
 
-	public TestsRunner(String config, File tests) throws RuntimeException {
+	public TestsGrader(String config) throws RuntimeException {
 		try {
 			this.config = new XMLConfiguration(config);
 			this.project = this.config.getFile().getParentFile();
-			this.runner = new TestRunner(tests);
 		} catch (ConfigurationException e) {
 			throw new RuntimeException(e);
 		}
@@ -45,19 +43,19 @@ public class TestsRunner implements IRunner {
 	}
 
 	@Override
-	public TestsResult run() {
+	public TestsResult grade(File repo) {
 
 		listener.init();
-		return runTests(config);
+		return runTests(new TestRunner(new File(repo, "MiniJava-tests")), config);
 	}
 
-	public TestsResult check() {
+	public TestsResult check(File repo) {
 
 		listener.init();
-		return runLanguages(config);
+		return runLanguages(new TestRunner(new File(repo, "MiniJava-tests")), config);
 	}
 
-	private TestsResult runLanguages(HierarchicalConfiguration config) {
+	private TestsResult runLanguages(TestRunner runner, HierarchicalConfiguration config) {
 		
 		TestsResult result = new TestsResult(config.getString("[@name]", ""),
 				listener);
@@ -86,14 +84,14 @@ public class TestsRunner implements IRunner {
 		
 		return result;
 	}
-	private TestsResult runTests(HierarchicalConfiguration config) {
+	private TestsResult runTests(TestRunner runner, HierarchicalConfiguration config) {
 
-		TestsResult result = runLanguages(config);
+		TestsResult result = runLanguages(runner, config);
 
 		try {
 
 			for (Object group : config.configurationsAt("group"))
-				result.finishedGroup(runTests((HierarchicalConfiguration) group));
+				result.finishedGroup(runTests(runner, (HierarchicalConfiguration) group));
 
 			result.setStatus(Status.SUCCESS);
 
