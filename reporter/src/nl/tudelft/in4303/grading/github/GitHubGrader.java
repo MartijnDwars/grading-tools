@@ -27,6 +27,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FileUtils;
 
 public class GitHubGrader {
+
 	private static final String GRADING_CONTEXT = "grading/in4303";
 
 	private PullRequestService pullRequestService;
@@ -55,7 +56,15 @@ public class GitHubGrader {
 		this.graders.put(exercise, runner);
 	}
 
-	public void run() {
+	public void check(String pattern) {
+		run(true, pattern);
+	}
+	
+	public void grade(String pattern) {
+		run(false, pattern);
+	}
+	
+	private void run(boolean checkOnly, String pattern) {
 		try {
 			List<Repository> orgRepositories = repoService
 					.getOrgRepositories("TUDelft-IN4303");
@@ -63,7 +72,7 @@ public class GitHubGrader {
 			// Retrieve all open pull requests
 			List<PullRequest> openPullRequests = new ArrayList<PullRequest>();
 			for (Repository repo : orgRepositories) {
-				if (isStudentRepository(repo)) {
+				if (isStudentRepository(repo, pattern)) {
 					openPullRequests.addAll(getOpenPullRequests(repo));
 				}
 			}
@@ -73,15 +82,19 @@ public class GitHubGrader {
 				if (!pullRequestIsGraded(pullRequest)) {
 					IGrader grader = this.graders.get(pullRequest.getBase().getRef());
 					if (grader != null) {
-						setStatusPending(pullRequest);
+						
+						if (!checkOnly)
+							setStatusPending(pullRequest);
 						
 						System.out.println(String.format("Started grading pull request %s of user %s", pullRequest.getTitle(), pullRequest.getUser().getLogin()));
-						IResult report = gradePullRequest(pullRequest, grader);
+						IResult report = gradePullRequest(pullRequest, grader, checkOnly);
 						
 						System.out.println(String.format("Uploading report to pull-request %s of user %s (%s)", pullRequest.getTitle(), pullRequest.getUser().getLogin(), report.getStatus().toString()));
-						uploadReportAndStatus(pullRequest, report);
+						if (!checkOnly)
+							uploadReportAndStatus(pullRequest, report);
+					} else {
+						uploadReportAndStatus(pullRequest, new NoGraderResult());
 					}
-					// TODO: mention if there is no grader on this branch?
 				}
 			}
 		} catch (IOException e) {
@@ -89,8 +102,8 @@ public class GitHubGrader {
 		}
 	}
 
-	private static boolean isStudentRepository(Repository repo) {
-		return repo.getName().matches("^student-(.*)$");
+	private static boolean isStudentRepository(Repository repo, String pattern) {
+		return repo.getName().matches(pattern);
 	}
 
 	private List<PullRequest> getOpenPullRequests(Repository repo)
@@ -120,7 +133,7 @@ public class GitHubGrader {
 		}
 	}
 
-	private IResult gradePullRequest(PullRequest pullRequest, IGrader grader) {
+	private IResult gradePullRequest(PullRequest pullRequest, IGrader grader, boolean checkOnly) {
 		try {
 			File tmpDir = createTemporaryDirectory();
 
@@ -140,8 +153,12 @@ public class GitHubGrader {
 					.call();
 
 			// execute a test program to get a report back
-			IResult report = grader.grade(tmpDir);
-			
+			IResult report;
+			if (checkOnly) {
+				report = grader.check(tmpDir);
+			} else {
+				report = grader.grade(tmpDir);
+			}
 			// close the repo
 			tmpRepo.close();
 			
@@ -207,4 +224,18 @@ public class GitHubGrader {
 		}));
 		return tmpDir;
 	}
+	
+	private final class NoGraderResult implements IResult {
+		@Override
+		public Status getStatus() {
+			return Status.ERROR;
+		}
+		
+		@Override
+		public String getReport() {
+			return "You need to file pull requests against the branch of the assignment you want to receive feedback on. Otherwise, the grading tool does not pick it up.";
+		}
+
+	}
+
 }

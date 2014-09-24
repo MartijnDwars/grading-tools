@@ -3,8 +3,8 @@ package nl.tudelft.in4303.grading.tests;
 import java.io.File;
 import java.util.Iterator;
 
+import nl.tudelft.in4303.grading.IFeedbackGrader;
 import nl.tudelft.in4303.grading.IResult.Status;
-import nl.tudelft.in4303.grading.IGrader;
 import nl.tudelft.in4303.grading.TestRunner;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -13,7 +13,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.metaborg.spt.listener.ITestReporter;
 import org.metaborg.spt.listener.TestReporterProvider;
 
-public class TestsGrader implements IGrader {
+public class TestsGrader implements IFeedbackGrader {
 
 	private final XMLConfiguration config;
 	private final File project;

@@ -4,11 +4,11 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.tudelft.in4303.grading.IResult;
+import nl.tudelft.in4303.grading.IFeedbackResult;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
-public class TestsResult implements IResult {
+public class TestsResult implements IFeedbackResult {
 	
 	private final String name;
 	
@@ -46,7 +46,12 @@ public class TestsResult implements IResult {
 		this.missed   += result.missed;
 	}
 	
+	@Override
 	public String getReport() {
+		return getFeedback();
+	}
+	
+	public String getFeedback() {
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PrintStream stream = new PrintStream(output);
