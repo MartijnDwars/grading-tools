@@ -15,8 +15,8 @@ public class Main {
 					"gh.properties");
 			GitHubGrader grader = new GitHubGrader(user.getString("user"),
 					user.getString("user2"));
-			grader.registerRunner("assignment1", new FeedbackWrapper(new TestsGrader("languages2.xml")));
-			grader.check("^student-pmit(.*)$");
+			grader.registerRunner("assignment1", new TestsGrader());
+			grader.grade("^student-mjd(.*)$");
 			
 		} catch (ConfigurationException e) {
 			e.printStackTrace();

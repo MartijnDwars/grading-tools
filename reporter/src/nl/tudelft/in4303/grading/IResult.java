@@ -10,5 +10,9 @@ public interface IResult {
 	
 	public abstract Status getStatus();
 
-	public abstract String getReport();
+	public abstract String getStatusDescription();
+	
+	public abstract String getFeedback();
+	
+	public abstract String getGrade();
 }

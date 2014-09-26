@@ -24,4 +24,19 @@ public class CombinedCommitState {
 		this.statuses = statuses;
 		return this;
 	}
+	
+	public String getState(String context) {
+		for (ExtendedCommitStatus status : statuses)
+			if (context.equals(status.getContext()))
+				return status.getState();
+		return null;
+	}
+	
+	public boolean hasState(String context) {
+		return getState() != null;
+	}
+	
+	public boolean hasState(String context, String state) {
+		return state == getState(context);
+	}
 }

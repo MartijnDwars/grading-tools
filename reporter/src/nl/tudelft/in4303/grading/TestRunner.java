@@ -45,7 +45,7 @@ public class TestRunner {
 		}
 	}
 
-	public int runTests() {
+	public boolean runTests() {
 
 		try {
 			FileUtils.deleteDirectory(cache);
@@ -58,7 +58,7 @@ public class TestRunner {
 		params.filestobuildon = ".";
 		params.noanalysis = true;
 
-		return new SunshineMainDriver().run();
+		return new SunshineMainDriver().run() == 0;
 	}
 
 	public static void registerLanguage(File esv) {

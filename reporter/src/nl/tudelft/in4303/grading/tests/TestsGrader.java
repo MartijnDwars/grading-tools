@@ -3,8 +3,7 @@ package nl.tudelft.in4303.grading.tests;
 import java.io.File;
 import java.util.Iterator;
 
-import nl.tudelft.in4303.grading.IFeedbackGrader;
-import nl.tudelft.in4303.grading.IResult.Status;
+import nl.tudelft.in4303.grading.IGrader;
 import nl.tudelft.in4303.grading.TestRunner;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -13,7 +12,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.metaborg.spt.listener.ITestReporter;
 import org.metaborg.spt.listener.TestReporterProvider;
 
-public class TestsGrader implements IFeedbackGrader {
+public class TestsGrader implements IGrader {
 
 	private final XMLConfiguration config;
 	private final File project;
@@ -43,16 +42,27 @@ public class TestsGrader implements IFeedbackGrader {
 	}
 
 	@Override
-	public TestsResult grade(File repo) {
-
-		listener.init();
-		return runTests(new TestRunner(new File(repo, "MiniJava-tests")), config);
-	}
-
 	public TestsResult check(File repo) {
 
+		return grade(repo, true);
+	}
+
+	@Override
+	public TestsResult grade(File repo) {
+
+		return grade(repo, false);
+	}
+
+	private TestsResult grade(File repo, boolean checkOnly) {
+
 		listener.init();
-		return runLanguages(new TestRunner(new File(repo, "MiniJava-tests")), config);
+		TestRunner runner = new TestRunner(new File(repo, "MiniJava-tests"));
+		TestsResult result = runLanguages(runner, config);
+		if (checkOnly || result.hasErrors())
+			return result;
+		else
+			result.finishedGroup(runTests(runner, config.configurationAt("group")));
+			return result;
 	}
 
 	private TestsResult runLanguages(TestRunner runner, HierarchicalConfiguration config) {
@@ -69,17 +79,19 @@ public class TestsGrader implements IFeedbackGrader {
 				final String esvPath = langConf.getString("[@esv]");
 				TestRunner.registerLanguage(new File(project, esvPath));
 
-				runner.runTests();
+				if (!runner.runTests())
+					result.error("");
 
 				result.finishedLanguage(listener.newLanguage(),
-						langConf.getDouble("[@points]", 1));
+						langConf.getString("[@description]"), langConf.getDouble("[@points]", 0));
 			}
 			
-			result.setStatus(Status.SUCCESS);
-
+			result.succeed();
+			
 		} catch (Exception e) {
-			System.err.println(e);
-			result.setStatus(Status.ERROR);
+			System.out.println("caught");
+			e.printStackTrace(System.err);
+			result.error(e.toString());
 		}
 		
 		return result;
@@ -93,11 +105,10 @@ public class TestsGrader implements IFeedbackGrader {
 			for (Object group : config.configurationsAt("group"))
 				result.finishedGroup(runTests(runner, (HierarchicalConfiguration) group));
 
-			result.setStatus(Status.SUCCESS);
+			result.succeed();
 
 		} catch (Exception e) {
-			System.err.println(e);
-			result.setStatus(Status.ERROR);
+			result.error(e.toString());
 		}
 		return result;
 	}

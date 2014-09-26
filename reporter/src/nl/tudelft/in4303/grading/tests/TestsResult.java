@@ -4,22 +4,24 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.tudelft.in4303.grading.IFeedbackResult;
+import nl.tudelft.in4303.grading.IResult;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
-public class TestsResult implements IFeedbackResult {
+public class TestsResult implements IResult {
 	
 	private final String name;
 	
-	private Status status = Status.FAILURE;
+	private Status status = null;
 	private double total  = 0;
 	private double points = 0;
 	private int detected  = 0;
 	private int missed    = 0;
 	
-	private final List<TestsResult> results = new ArrayList<>();
+	private final List<String> missedDescr = new ArrayList<>();
 	
+	private final List<TestsResult> results = new ArrayList<>();
+	private final List<String> errors = new ArrayList<>();
 	private final TestsListener listener;
 
 	public TestsResult(String name, TestsListener listener) {
@@ -27,19 +29,23 @@ public class TestsResult implements IFeedbackResult {
 		this.listener = listener;
 	}
 	
-	public void finishedLanguage(boolean detected, double points) {
+	public void finishedLanguage(boolean detected, String description, double points) {
 		
 		this.total += points;
 		if (detected) {
 			this.points += points;
 			this.detected++;
-		} else
-			this.missed++;
+		} else {
+			missed++;
+			missedDescr.add(description);
+		}
 	}
 	
 	public void finishedGroup(TestsResult result) {
 
 		results.add(result);
+		errors.addAll(result.errors);
+		
 		this.total    += result.total;
 		this.points   += result.points;
 		this.detected += result.detected;
@@ -47,68 +53,128 @@ public class TestsResult implements IFeedbackResult {
 	}
 	
 	@Override
-	public String getReport() {
-		return getFeedback();
-	}
-	
-	public String getFeedback() {
+	public String getStatusDescription() {
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PrintStream stream = new PrintStream(output);
-		report(" ", stream);
 		
-		stream.println("# Summary");
-		stream.println();
+		switch (status) {
+		case SUCCESS:
+			
+			stream.print("You score " + points + " points. ");
+			stream.print("You have " + listener.getValid() + " valid tests. ");
+			stream.print(listener.getEffective() + " of your valid tests detect " + detected + " erroneous language definitions.");
+			break;
+
+		case ERROR:
+			
+			stream.print("Your tests caused " + errors.size() + " errors.");
+			break;
+			
+		case FAILURE:
+			break;
+		}
 		
-		stream.println("You score currently " + points + " points.");
-		stream.println();
-		stream.println("You have " + listener.getValid() + " valid tests.");
-//		stream.println("You have " + grader.getInvalid() + " invalid tests.");
-		stream.println(listener.getEffective() + " of your valid tests detected " + detected + " erroneous language definitions.");
-//		stream.println("You missed " + missed + " erroneous language definitions.");
+		stream.close();
+		return output.toString();
+	}
 	
+	@Override
+	public String getGrade() {
+		return getReport(true);
+	}
+	
+	@Override
+	public String getFeedback() {
+		return getReport(false);
+	}
+		public String getReport(boolean details) {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		PrintStream stream = new PrintStream(output);
+		
+		switch (status) {
+		case SUCCESS:
+			
+			report("# ", stream, details);
+			
+		case ERROR:
+
+			for (String error : errors) {
+				stream.println("```");
+				stream.println(error);
+				stream.println("```");
+				stream.println();
+			}
+			break;
+			
+		case FAILURE:
+			break;
+		}
+		
+		stream.close();
 		return output.toString();
 	}
 
-	private void report(String header, PrintStream stream) {
+	private void report(String header, PrintStream stream, boolean details) {
 
 		stream.println(header + name);
 		stream.println();
 		
 		if (detected == 0) {
-			stream.println("You missed all erroneous language definitions.");
+			stream.println("You miss all erroneous language definitions.");
 			return;
 		}
 		
 		if (missed == 0) {
-			stream.println("You detected all erroneous language definitions.");
+			stream.println("You detect all erroneous language definitions.");
 			return;
 		}
 		
-		stream.println(groupSuccess());
+		groupSuccess(stream, details);
 		stream.println();
 		
 		for (TestsResult group : results)
-			group.report("#" + header, stream);
-	}
+			if (details)
+				group.report("#" + header + " (" + points + " out of " + total + " points)", stream, details);
+			else
+				group.report("# " + header, stream, details);
+	}	
 	
-	private String groupSuccess() {
+	private void groupSuccess(PrintStream stream, boolean details) {
 
-		if (detected == missed)
-			return "You detected as many erroneous language definitions as you missed.";
-
+		if (details) {
+		
+			stream.println("You missed the following erroneous language definitions:");
+			stream.println();
+			
+			for (String missed : missedDescr)
+				stream.println("* "+missed);
+			
+			stream.println();
+			return;
+		}
+		
+		if (detected == missed) {
+			stream.println("You detect as many erroneous language definitions as you miss.");
+			return;
+		}
+		
 		double ratio = detected / missed;
 		
-		if (ratio >= 3.0) 
-			return "You detected many erroneous language definitions.";
-
-		if (ratio < 0.33) 
-			return "You missed many erroneous language definitions.";
-
+		if (ratio >= 3.0) {
+			stream.println("You detect many erroneous language definitions.");
+			return;
+		}
+		
+		if (ratio < 0.33) {
+			stream.println("You miss many erroneous language definitions.");
+			return;
+		}
+		
 		if (detected > missed)
-			return "You detected more erroneous language definitions than you missed.";
+			stream.println("You detect more erroneous language definitions than you miss.");
 		else
-			return "You detected less erroneous language definitions than you missed.";
+			stream.println("You detect less erroneous language definitions than you miss.");
 	}
 
 	@Override
@@ -116,7 +182,17 @@ public class TestsResult implements IFeedbackResult {
 		return status;
 	}
 
-	public void setStatus(Status status) {
-		this.status = status;
+	public void succeed() {
+		if (status == null)
+			status = Status.SUCCESS;
+	}
+	
+	public void error(String e) {
+		status = Status.ERROR;
+		errors.add(e);
+	}
+
+	public boolean hasErrors() {
+		return status == Status.ERROR;
 	}
 }

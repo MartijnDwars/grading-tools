@@ -5,161 +5,151 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nl.tudelft.in4303.grading.IResult;
 import nl.tudelft.in4303.grading.IGrader;
+import nl.tudelft.in4303.grading.IResult;
 
+import org.eclipse.egit.github.core.MergeStatus;
 import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.Repository;
-import org.eclipse.egit.github.core.client.GitHubClient;
-import org.eclipse.egit.github.core.service.IssueService;
-import org.eclipse.egit.github.core.service.PullRequestService;
-import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FileUtils;
 
 public class GitHubGrader {
 
-	private static final String GRADING_CONTEXT = "grading/in4303";
+	static final String GRADING_ORGANISATION = "TUDelft-IN4303";
+	static final String GRADING_CONTEXT = "grading/in4303";
+	static final String autoComment  = "*Auto-generated comment*" + System.lineSeparator() + System.lineSeparator();
+	static final String NO_GRADER = autoComment + "You need to create pull requests against the branch of the assignment you want to submit.";
 
-	private PullRequestService pullRequestService;
-	private RepositoryService repoService;
-	private ExtendedCommitService commitService;
-	private IssueService issueService;
-	private CredentialsProvider credentialsProvider;
-	
-	private HashMap<String, IGrader> graders;
+	private final HashMap<String, IGrader> graders;
+
+	private final GitHubService git;
 
 	public GitHubGrader(String username, String password) {
-		GitHubClient client = new GitHubClient();
-		client.setCredentials(username, password);
-		credentialsProvider = new UsernamePasswordCredentialsProvider(username,
-				password);
-
-		repoService = new RepositoryService(client);
-		pullRequestService = new PullRequestService(client);
-		commitService = new ExtendedCommitService(client);
-		issueService = new IssueService(client);
-		
-		this.graders = new HashMap<String, IGrader>();
+		git = new GitHubService(username, password);		
+		graders = new HashMap<String, IGrader>();
 	}
 	
 	public void registerRunner(String exercise, IGrader runner) {
-		this.graders.put(exercise, runner);
+		graders.put(exercise, runner);
 	}
 
-	public void check(String pattern) {
-		run(true, pattern);
-	}
-	
-	public void grade(String pattern) {
-		run(false, pattern);
-	}
-	
-	private void run(boolean checkOnly, String pattern) {
+	public void merge(String pattern, int late) {
+
 		try {
-			List<Repository> orgRepositories = repoService
-					.getOrgRepositories("TUDelft-IN4303");
 
-			// Retrieve all open pull requests
-			List<PullRequest> openPullRequests = new ArrayList<PullRequest>();
-			for (Repository repo : orgRepositories) {
-				if (isStudentRepository(repo, pattern)) {
-					openPullRequests.addAll(getOpenPullRequests(repo));
-				}
-			}
+			List<PullRequest> openPullRequests = git.getPullRequests(GRADING_ORGANISATION, pattern, "open");
 
-			// Grade all the pull requests
-			for (PullRequest pullRequest : openPullRequests) {
-				if (!pullRequestIsGraded(pullRequest)) {
-					IGrader grader = this.graders.get(pullRequest.getBase().getRef());
-					if (grader != null) {
-						
-						if (!checkOnly)
-							setStatusPending(pullRequest);
-						
-						System.out.println(String.format("Started grading pull request %s of user %s", pullRequest.getTitle(), pullRequest.getUser().getLogin()));
-						IResult report = gradePullRequest(pullRequest, grader, checkOnly);
-						
-						System.out.println(String.format("Uploading report to pull-request %s of user %s (%s)", pullRequest.getTitle(), pullRequest.getUser().getLogin(), report.getStatus().toString()));
-						if (!checkOnly)
-							uploadReportAndStatus(pullRequest, report);
-					} else {
-						uploadReportAndStatus(pullRequest, new NoGraderResult());
+			// Merge all open pull requests
+			for (PullRequest request : openPullRequests) {
+				PullRequestMarker base   = request.getBase();
+				Repository        repo   = base.getRepo();
+				int               number = request.getNumber();
+
+				if (graders.get(base.getRef()) == null) {
+					git.addComment(request, NO_GRADER);
+				} else {
+					MergeStatus status = git.merge(repo, number, "Merge submission");
+					
+					if (!status.isMerged()) {
+						uploadReportAndStatus(request, new NoMergeResult());	
+					} else if (late > 0) {
+						git.addComment(request, autoComment + "This submission costs you " + late + " late days.");
 					}
 				}
 			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static boolean isStudentRepository(Repository repo, String pattern) {
-		return repo.getName().matches(pattern);
+	public void check(String pattern) {
+		try {
+			run(true, pattern);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-
-	private List<PullRequest> getOpenPullRequests(Repository repo)
-			throws IOException {
-		return pullRequestService.getPullRequests(repo, "open");
+	
+	public void grade(String pattern) {
+		try {
+			run(false, pattern);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-
-	private boolean pullRequestIsGraded(PullRequest pullRequest)
-			throws IOException {
-		List<CombinedCommitState> combinedStates = commitService
-				.getCombinedStatus(pullRequest.getBase().getRepo(), pullRequest
-						.getHead().getSha());
-
-		ExtendedCommitStatus gradingStatus = null;
-		for (CombinedCommitState state : combinedStates) {
-			for (ExtendedCommitStatus status : state.getStatuses()) {
-				if (GRADING_CONTEXT.equals(status.getContext())) {
-					gradingStatus = status;
+	
+	public void resetState(String pattern, String expected) {
+		try {
+			for (PullRequest pullRequest : git.getPullRequests(GRADING_ORGANISATION, pattern, "closed")) 
+				if (git.hasState(pullRequest, GRADING_CONTEXT, expected)) {
+					ExtendedCommitStatus status = new ExtendedCommitStatus();
+					status.setState("pending");
+					status.setDescription("The assignment is being graded.");
+					status.setContext(GRADING_CONTEXT);
+					git.setStatus(pullRequest, status);	
 				}
-			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+	}
+	
+	private void run(boolean checkOnly, String pattern) throws IOException {
 
-		if (gradingStatus == null) {
-			return false;
-		} else {
-			return !"pending".equals(gradingStatus.getState());
-		}
+		List<PullRequest> requests = git.getPullRequests(GRADING_ORGANISATION, pattern, "open");
+		
+		for (PullRequest request : requests) 
+			if (isGraded(request))
+				requests.remove(request);
+		
+		requests.addAll(git.getPullRequests(GRADING_ORGANISATION, pattern, "merged"));
+		
+		for (PullRequest request : requests) 
+			{
+				IGrader grader = graders.get(request.getBase().getRef());
+				if (grader == null) {
+					git.addComment(request, NO_GRADER);
+						
+					return;
+				} 
+				if (!checkOnly) {
+					
+					ExtendedCommitStatus status = new ExtendedCommitStatus();
+					status.setState("pending");
+					status.setDescription("The assignment is being graded.");
+					status.setContext(GRADING_CONTEXT);
+					git.setStatus(request, status);	
+				}
+				
+				IResult report = gradePullRequest(request, grader, checkOnly);
+
+				if (!checkOnly)
+					uploadReportAndStatus(request, report);
+				
+			}
+	}
+
+	private boolean isGraded(PullRequest request) throws IOException {
+		return git.hasState(request, GRADING_CONTEXT, "success") || git.hasState(request, GRADING_CONTEXT, "pending");
 	}
 
 	private IResult gradePullRequest(PullRequest pullRequest, IGrader grader, boolean checkOnly) {
 		try {
 			File tmpDir = createTemporaryDirectory();
-
-			// git init
-			Git tmpRepo = new InitCommand().setDirectory(tmpDir).call();
-
-			// git fetch the pullRequest
-			tmpRepo.fetch()
-					.setCredentialsProvider(credentialsProvider)
-					.setRemote(pullRequest.getBase().getRepo().getCloneUrl())
-					.setRefSpecs(
-							new RefSpec("refs/pull/" + pullRequest.getNumber()
-									+ "/merge")).call();
-
-			// git checkout the fetched head
-			tmpRepo.checkout().setAllPaths(true).setStartPoint("FETCH_HEAD")
-					.call();
-
-			// execute a test program to get a report back
+			Git tmpRepo = git.checkout(pullRequest, tmpDir);
+			
 			IResult report;
-			if (checkOnly) {
+			if (checkOnly)
 				report = grader.check(tmpDir);
-			} else {
+			else
 				report = grader.grade(tmpDir);
-			}
-			// close the repo
+			
 			tmpRepo.close();
 			
 			return report;
@@ -167,16 +157,7 @@ public class GitHubGrader {
 			throw new RuntimeException(e);
 		} catch (GitAPIException e) {
 			throw new RuntimeException(e);
-		}
-	}
-
-	private void setStatusPending(PullRequest pullRequest) throws IOException {
-		ExtendedCommitStatus status = new ExtendedCommitStatus();
-		status.setState("pending");
-		status.setDescription("The assignment is being graded.");
-		status.setContext(GRADING_CONTEXT);
-		commitService.createStatus(pullRequest.getBase().getRepo(), pullRequest
-				.getHead().getSha(), status);
+		} 
 	}
 
 	private void uploadReportAndStatus(PullRequest pullRequest, IResult report) throws IOException {
@@ -185,27 +166,23 @@ public class GitHubGrader {
 		switch (report.getStatus()) {
 		case SUCCESS:
 			status.setState("success");
-			status.setDescription("The assignment was graded with a PASS.");
 			break;
 		case FAILURE:
 			status.setState("failure");
-			status.setDescription("The assignment was graded with a FAIL.");
 			break;
 		case ERROR:
 		default:
 			status.setState("error");
-			status.setDescription("An error occurred while grading the assignment.");
 			break;
 		}
+		status.setDescription(report.getStatusDescription());
 		status.setContext(GRADING_CONTEXT);
 
-		commitService.createStatus(pullRequest.getBase().getRepo(), pullRequest
-				.getHead().getSha(), status);
-
-		String comment = "*Auto-generated comment*" + System.lineSeparator()
-				+ System.lineSeparator() + report.getReport();
-		issueService.createComment(pullRequest.getBase().getRepo(),
-				pullRequest.getNumber(), comment);
+		git.setStatus(pullRequest, status);
+		if (pullRequest.isMerged())
+			git.addComment(pullRequest, report.getGrade());
+		else
+			git.addComment(pullRequest, report.getFeedback());
 	}
 
 	private File createTemporaryDirectory() throws IOException {
@@ -223,19 +200,6 @@ public class GitHubGrader {
 			}
 		}));
 		return tmpDir;
-	}
-	
-	private final class NoGraderResult implements IResult {
-		@Override
-		public Status getStatus() {
-			return Status.ERROR;
-		}
-		
-		@Override
-		public String getReport() {
-			return "You need to file pull requests against the branch of the assignment you want to receive feedback on. Otherwise, the grading tool does not pick it up.";
-		}
-
 	}
 
 }
