@@ -1,4 +1,4 @@
-package nl.tudelft.in4303.grading.tests;
+package nl.tudelft.in4303.grading;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,6 +16,7 @@ public class TestsListener implements ITestReporter {
 	private final HashSet<String> effective   = new HashSet<String>(500);
 	private final HashSet<String> ineffective = new HashSet<String>(500);
 
+	private boolean active = false;
 	private boolean detected = false;
 	private boolean init = false;
 	
@@ -25,13 +26,13 @@ public class TestsListener implements ITestReporter {
 
 	@Override
 	public void addTestsuite(String name, String filename) throws Exception {
-		if (detected) throw new RuntimeException();
+		if (active && detected) throw new RuntimeException();
 	}
 
 	@Override
 	public void addTestcase(String testsuiteFile, String description)
 			throws Exception {
-		if (detected || invalid.contains(testsuiteFile + " " + description)) throw new RuntimeException();	}
+		if (active && (detected || invalid.contains(testsuiteFile + " " + description))) throw new RuntimeException();	}
 
 	@Override
 	public void startTestcase(String testsuiteFile, String description)
@@ -41,6 +42,9 @@ public class TestsListener implements ITestReporter {
 	@Override
 	public void finishTestcase(String testsuiteFile, String description,
 			boolean succeeded, Collection<String> messages) throws Exception {
+		
+		if (!active)
+			return;
 		
 		final String key = testsuiteFile + " " + description;
 		
@@ -55,6 +59,7 @@ public class TestsListener implements ITestReporter {
 	}
 	
 	public void init() {
+		active = true;
 		init = true;
 		valid.clear();
 		invalid.clear();
@@ -85,5 +90,9 @@ public class TestsListener implements ITestReporter {
 	
 	public int getEffective() {
 		return effective.size();
+	}
+
+	public void exit() {
+		active = false;
 	}
 }

@@ -108,7 +108,7 @@ public class GitHubGrader {
 			if (isGraded(request))
 				requests.remove(request);
 		
-		requests.addAll(git.getPullRequests(GRADING_ORGANISATION, pattern, "merged"));
+//		requests.addAll(git.getPullRequests(GRADING_ORGANISATION, pattern, "merged"));
 		
 		for (PullRequest request : requests) 
 			{

@@ -57,12 +57,12 @@ public class GitHubService {
 		// Retrieve all open, non-graded pull requests
 		List<PullRequest> requests = new ArrayList<PullRequest>();
 		for (Repository repo : orgRepositories) 
-			if (repo.getName().matches(pattern)) 
-				if (state.equals("merged"))
+			if (repo.getName().matches(pattern))
+				if (state.equals("merged")) {
 					for (PullRequest closed : pullRequestService.getPullRequests(repo, "closed"))
 						if (pullRequestService.isMerged(repo, closed.getNumber()))
 							requests.add(closed);
-				else
+				} else
 					requests.addAll(pullRequestService.getPullRequests(repo, state));
 		
 		return requests;

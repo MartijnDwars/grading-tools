@@ -1,28 +1,16 @@
-package nl.tudelft.in4303.grading.tests;
+package nl.tudelft.in4303.grading.language;
 
 import java.io.PrintStream;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import nl.tudelft.in4303.grading.GroupResult;
 import nl.tudelft.in4303.grading.TestsListener;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+public class LanguageResult extends GroupResult {
 
-public class TestsResult extends GroupResult {
-	
-	public TestsResult(String name, TestsListener listener) {
+	public LanguageResult(String name, TestsListener listener) {
 		super(name, listener);
-	}
-	
-	public void finishedLanguage(boolean detected, String description, double points) {
-		
-		this.total += points;
-		if (detected) {
-			this.points += points;
-			this.passed++;
-		} else {
-			missed++;
-			missedDescr.add(description);
-		}
 	}
 	
 	@Override
@@ -55,18 +43,18 @@ public class TestsResult extends GroupResult {
 	public void report(PrintStream stream, boolean details) {
 
 		if (passed == 0) {
-			stream.println("You miss all erroneous language definitions.");
+			stream.println("You fail all tests.");
 			return;
 		}
 		
 		if (missed == 0) {
-			stream.println("You detect all erroneous language definitions.");
+			stream.println("You pass all tests.");
 			return;
 		}
 		
 		if (details) {
 		
-			stream.println("You missed the following erroneous language definitions:");
+			stream.println("You failed the following tests:");
 			stream.println();
 			
 			for (String missed : missedDescr)
@@ -77,25 +65,26 @@ public class TestsResult extends GroupResult {
 		}
 		
 		if (passed == missed) {
-			stream.println("You detect as many erroneous language definitions as you miss.");
+			stream.println("You pass as many tests as you fail.");
 			return;
 		}
 		
 		double ratio = passed / missed;
 		
 		if (ratio >= 3.0) {
-			stream.println("You detect many erroneous language definitions.");
+			stream.println("You pass many tests.");
 			return;
 		}
 		
 		if (ratio < 0.33) {
-			stream.println("You miss many erroneous language definitions.");
+			stream.println("You fail many tests.");
 			return;
 		}
 		
 		if (passed > missed)
-			stream.println("You detect more erroneous language definitions than you miss.");
+			stream.println("You pass more tests than you fail.");
 		else
-			stream.println("You detect less erroneous language definitions than you miss.");
+			stream.println("You pass less tests than you fail.");
 	}
+	
 }

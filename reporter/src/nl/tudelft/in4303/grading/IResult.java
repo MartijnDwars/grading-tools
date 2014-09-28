@@ -1,6 +1,7 @@
 package nl.tudelft.in4303.grading;
 
 
+
 public interface IResult {
 	public static enum Status {
 		SUCCESS,
