@@ -21,19 +21,19 @@ public class LanguageGrader extends Grader {
 		
 		TestRunner.registerLanguage(new File(new File(new File(repo, "MiniJava"), "include"), "MiniJava.packed.esv"));
 		
-		TestRunner runner = new TestRunner(project);
-		LanguageResult result = runTests(runner, config);
-		if (!runner.runTests())
+		LanguageResult result = new LanguageResult(config.getString("[@name]", ""), listener);
+		
+		if (!new TestRunner(project).runTests())
 			result.error("");
 		
 		if (!checkOnly && !result.hasErrors())
-			result.finishedGroup(runTests(runner, config.configurationAt("group")));
+			result.finishedGroup(analyseTests(config.configurationAt("group")));
 		
 		listener.exit();
 		return result;
 	}
 
-	private LanguageResult runTests(TestRunner runner, HierarchicalConfiguration subnodeConfiguration) {
+	private LanguageResult analyseTests(HierarchicalConfiguration subnodeConfiguration) {
 		LanguageResult result = new LanguageResult(config.getString("[@name]", ""), listener);
 		return result;
 	}
