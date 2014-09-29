@@ -2,6 +2,7 @@ package nl.tudelft.in4303.grading;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Hashtable;
 
 import org.metaborg.spt.listener.ITestReporter;
 
@@ -16,6 +17,9 @@ public class TestsListener implements ITestReporter {
 	private final HashSet<String> effective   = new HashSet<String>(500);
 	private final HashSet<String> ineffective = new HashSet<String>(500);
 
+	private final Hashtable<String, Integer> passed = new Hashtable<>();
+	private final Hashtable<String, Integer> missed = new Hashtable<>();
+	
 	private boolean active = false;
 	private boolean detected = false;
 	private boolean init = false;
@@ -26,6 +30,8 @@ public class TestsListener implements ITestReporter {
 
 	@Override
 	public void addTestsuite(String name, String filename) throws Exception {
+		passed.put(filename, 0);
+		missed.put(filename, 0);
 		if (active && detected) throw new RuntimeException();
 	}
 
@@ -45,6 +51,11 @@ public class TestsListener implements ITestReporter {
 		
 		if (!active)
 			return;
+		
+		if (succeeded)
+			passed.put(testsuiteFile, passed.get(testsuiteFile) + 1);
+		else
+			missed.put(testsuiteFile, missed.get(testsuiteFile) + 1);
 		
 		final String key = testsuiteFile + " " + description;
 		
@@ -94,5 +105,13 @@ public class TestsListener implements ITestReporter {
 
 	public void exit() {
 		active = false;
+	}
+
+	public int getPassed(String spt) {
+		return passed.get(spt);
+	}
+
+	public int getMissed(String spt) {
+		return missed.get(spt);
 	}
 }

@@ -26,15 +26,37 @@ public class LanguageGrader extends Grader {
 		if (!new TestRunner(project).runTests())
 			result.error("");
 		
-		if (!checkOnly && !result.hasErrors())
+		if (!checkOnly && !result.hasErrors()) {
 			result.finishedGroup(analyseTests(config.configurationAt("group")));
+			result.succeed();
+		}
 		
 		listener.exit();
 		return result;
 	}
 
-	private LanguageResult analyseTests(HierarchicalConfiguration subnodeConfiguration) {
+	private LanguageResult analyseTests(HierarchicalConfiguration config) {
+		
 		LanguageResult result = new LanguageResult(config.getString("[@name]", ""), listener);
+		
+		for (Object current : config.configurationsAt("suite")) {
+
+			HierarchicalConfiguration suiteConf = (HierarchicalConfiguration) current;
+
+			String spt    = new File(project, suiteConf.getString("[@spt]")).getAbsolutePath();
+			double points = suiteConf.getDouble("[@points]", 0);
+			String desc   = suiteConf.getString("[@description]");
+			int    passed = listener.getPassed(spt);
+			int    missed = listener.getMissed(spt);
+	
+			result.finishedSuite(passed, missed, points, desc);
+		}
+		
+		for (Object group : config.configurationsAt("group"))
+			result.finishedGroup(analyseTests((HierarchicalConfiguration) group));
+
+		result.succeed();
+		
 		return result;
 	}
 	

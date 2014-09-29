@@ -46,6 +46,6 @@ public abstract class Grader implements IGrader {
 		return grade(repo, false);
 	}
 
-	protected abstract IResult grade(File repo, boolean b);
+	protected abstract IResult grade(File repo, boolean checkOnly);
 
 }

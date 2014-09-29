@@ -34,7 +34,7 @@ public class TestsResult extends GroupResult {
 		switch (status) {
 		case SUCCESS:
 			
-			stream.print("You score " + points + " points. ");
+			stream.print("You score " + points + " out of " + total + " points. ");
 			stream.print("You have " + listener.getValid() + " valid tests. ");
 			stream.print(listener.getEffective() + " of your valid tests detect " + passed + " erroneous language definitions.");
 			break;

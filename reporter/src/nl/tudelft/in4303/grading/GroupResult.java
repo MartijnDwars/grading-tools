@@ -74,6 +74,12 @@ public abstract class GroupResult implements IResult {
 		case SUCCESS:
 			
 			report("# ", stream, details);
+			if (!details) {
+				stream.println();
+				stream.println("## Summary");
+				stream.println();
+				stream.println(getStatusDescription());
+			}
 			
 		case ERROR:
 
@@ -100,6 +106,9 @@ public abstract class GroupResult implements IResult {
 		
 		report(stream, details);
 		stream.println();
+		
+		if (passed == 0 || missed == 0)
+			return;
 		
 		for (GroupResult group : results)
 			if (details)

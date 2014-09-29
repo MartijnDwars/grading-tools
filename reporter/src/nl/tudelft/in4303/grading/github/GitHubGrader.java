@@ -136,7 +136,7 @@ public class GitHubGrader {
 	}
 
 	private boolean isGraded(PullRequest request) throws IOException {
-		return git.hasState(request, GRADING_CONTEXT, "success") || git.hasState(request, GRADING_CONTEXT, "pending");
+		return false; // git.hasState(request, GRADING_CONTEXT, "success") || git.hasState(request, GRADING_CONTEXT, "pending");
 	}
 
 	private IResult gradePullRequest(PullRequest pullRequest, IGrader grader, boolean checkOnly) {

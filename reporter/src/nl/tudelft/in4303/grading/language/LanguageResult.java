@@ -1,6 +1,8 @@
 package nl.tudelft.in4303.grading.language;
 
 import java.io.PrintStream;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -9,8 +11,11 @@ import nl.tudelft.in4303.grading.TestsListener;
 
 public class LanguageResult extends GroupResult {
 
+	private final DecimalFormat df = new DecimalFormat("#0.##");
+
 	public LanguageResult(String name, TestsListener listener) {
 		super(name, listener);
+		df.setRoundingMode(RoundingMode.HALF_UP);
 	}
 	
 	@Override
@@ -22,14 +27,13 @@ public class LanguageResult extends GroupResult {
 		switch (status) {
 		case SUCCESS:
 			
-			stream.print("You score " + points + " points. ");
-			stream.print("You have " + listener.getValid() + " valid tests. ");
-			stream.print(listener.getEffective() + " of your valid tests detect " + passed + " erroneous language definitions.");
+			stream.print("You score " + df.format(points) + " points out of " + total + " points. ");
+			stream.print("You pass " + passed + " tests. ");
 			break;
 	
 		case ERROR:
 			
-			stream.print("Your tests caused " + errors.size() + " errors.");
+			stream.print("Your language definition caused " + errors.size() + " errors.");
 			break;
 			
 		case FAILURE:
@@ -85,6 +89,14 @@ public class LanguageResult extends GroupResult {
 			stream.println("You pass more tests than you fail.");
 		else
 			stream.println("You pass less tests than you fail.");
+	}
+
+	public void finishedSuite(int passed, int missed, double points, String description) {
+			
+			this.total  += points;
+			this.points += points * passed / (passed + missed);
+			this.passed += passed;
+			this.missed += missed;
 	}
 	
 }
