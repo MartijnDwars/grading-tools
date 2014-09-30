@@ -1,6 +1,8 @@
 package nl.tudelft.in4303.grading.language;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
@@ -19,7 +21,61 @@ public class LanguageGrader extends Grader {
 		
 		listener.init();
 		
-		TestRunner.registerLanguage(new File(new File(new File(repo, "MiniJava"), "include"), "MiniJava.packed.esv"));
+		File esv = new File(new File(new File(repo, "MiniJava"), "include"), "MiniJava.packed.esv");
+		
+		if (!esv.exists())
+			return new IResult() {
+				
+				@Override
+				public String getStatusDescription() {
+					return "Your submission misses important files.";
+				}
+				
+				@Override
+				public Status getStatus() {
+					return Status.ERROR;
+				}
+				
+				@Override
+				public String getGrade() {
+					return getFeedback();
+				}
+				
+				@Override
+				public String getFeedback() {
+					return "Cannot find file `MiniJava/include/MiniJava.packed.esv`.";
+				}
+			};
+
+		try {
+			TestRunner.registerLanguage(esv);
+		} catch (final Exception e) {
+			return new IResult() {
+				
+				@Override
+				public String getStatusDescription() {
+					return "Your submission crashes.";
+				}
+				
+				@Override
+				public Status getStatus() {
+					return Status.ERROR;
+				}
+				
+				@Override
+				public String getGrade() {
+					return getFeedback();
+				}
+				
+				@Override
+				public String getFeedback() {
+					StringWriter sw = new StringWriter();
+					PrintWriter pw = new PrintWriter(sw);
+					e.printStackTrace(pw);
+					return sw.toString();
+				}
+			};
+		}
 		
 		LanguageResult result = new LanguageResult(config.getString("[@name]", ""), listener);
 		

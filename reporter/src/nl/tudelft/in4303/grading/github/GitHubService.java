@@ -68,11 +68,11 @@ public class GitHubService {
 		return requests;
 	}
 
-	protected void setStatus(PullRequest request, ExtendedCommitStatus status) throws IOException {
-		commitService.createStatus(request.getBase().getRepo(), request.getHead().getSha(), status);
+	protected void setStatus(Repository repo, String sha, ExtendedCommitStatus status) throws IOException {
+		commitService.createStatus(repo, sha, status);
 	}
 
-	protected Git checkout(PullRequest pullRequest, File tmpDir)
+	protected Git checkout(Repository repo, RefSpec refSpec, File tmpDir)
 			throws GitAPIException, InvalidRemoteException, TransportException,
 			RefAlreadyExistsException, RefNotFoundException,
 			InvalidRefNameException, CheckoutConflictException {
@@ -82,10 +82,8 @@ public class GitHubService {
 				// git fetch the pullRequest
 				tmpRepo.fetch()
 						.setCredentialsProvider(credentialsProvider)
-						.setRemote(pullRequest.getBase().getRepo().getCloneUrl())
-						.setRefSpecs(
-								new RefSpec("refs/pull/" + pullRequest.getNumber()
-										+ "/merge")).call();
+						.setRemote(repo.getCloneUrl())
+						.setRefSpecs(refSpec).call();
 			
 				// git checkout the fetched head
 				tmpRepo.checkout().setAllPaths(true).setStartPoint("FETCH_HEAD")
@@ -124,5 +122,9 @@ public class GitHubService {
 
 	public boolean isMerged(Repository repo, PullRequest request) throws IOException {
 		return pullRequestService.isMerged(repo, request.getNumber());
+	}
+	
+	public boolean close(PullRequest request) {
+		return true;
 	}
 }

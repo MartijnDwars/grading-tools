@@ -1,5 +1,7 @@
 package nl.tudelft.in4303.grading.github;
 
+import nl.tudelft.in4303.grading.IResult;
+
 import org.eclipse.egit.github.core.CommitStatus;
 
 public class ExtendedCommitStatus extends CommitStatus {
@@ -12,6 +14,31 @@ public class ExtendedCommitStatus extends CommitStatus {
 	
 	public ExtendedCommitStatus() {
 		super();
+	}
+	
+	public ExtendedCommitStatus(String context, String state, String description) {
+		super();
+		setContext(context);
+		setState(state);
+		setDescription(description);
+	}
+	
+	public ExtendedCommitStatus(IResult report) {
+	
+		super();
+		switch (report.getStatus()) {
+		case SUCCESS:
+			setState("success");
+			break;
+		case FAILURE:
+			setState("failure");
+			break;
+		case ERROR:
+		default:
+			setState("error");
+			break;
+		}
+		setDescription(report.getStatusDescription());
 	}
 	
 	public String getContext() {
