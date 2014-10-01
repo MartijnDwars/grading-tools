@@ -106,7 +106,11 @@ public abstract class GroupResult implements IResult {
 
 	private void report(String header, PrintStream stream, boolean details) {
 	
-		stream.println(header + name + " (" + df.format(points) + " out of " + total + " points)");
+		if (details)
+			stream.println(header + name + " (" + df.format(points) + " out of " + total + " points)");
+		else
+			stream.println(header + name);
+
 		stream.println();
 		
 		report(stream, details);
