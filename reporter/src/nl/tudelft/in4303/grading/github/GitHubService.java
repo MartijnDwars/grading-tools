@@ -3,7 +3,10 @@ package nl.tudelft.in4303.grading.github;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.egit.github.core.MergeStatus;
 import org.eclipse.egit.github.core.PullRequest;
@@ -48,11 +51,10 @@ public class GitHubService {
 	protected void addComment(PullRequest request, String comment) throws IOException {
 		issueService.createComment(request.getBase().getRepo(), request.getNumber(), comment);
 	}
-
-	protected List<PullRequest> getPullRequests(String org, String pattern, String state) throws IOException {
+	
+	protected Collection<PullRequest> getPullRequests(String org, String pattern, String state) throws IOException {
 		
-		List<Repository> orgRepositories = repoService
-				.getOrgRepositories(org);
+		List<Repository> orgRepositories = repoService.getOrgRepositories(org);
 	
 		// Retrieve all open, non-graded pull requests
 		List<PullRequest> requests = new ArrayList<PullRequest>();
@@ -68,6 +70,35 @@ public class GitHubService {
 		return requests;
 	}
 
+	protected Collection<PullRequest> getPullRequests(String org, String pattern, String branch, String state) throws IOException {
+		
+		List<Repository> orgRepositories = repoService.getOrgRepositories(org);
+		
+		List<PullRequest> requests = new ArrayList<PullRequest>();
+		for (Repository repo : orgRepositories) 
+			if (repo.getName().matches(pattern))
+				for (PullRequest request: pullRequestService.getPullRequests(repo, state))
+					if (branch.equals(request.getBase().getRef()))
+						requests.add(request);
+		
+		return requests;
+	}
+
+	protected Collection<PullRequest> getLatestPullRequests(String org, String pattern, String branch, String state) throws IOException {
+		
+		List<Repository> orgRepositories = repoService.getOrgRepositories(org);
+		
+		Map<String, PullRequest> requests = new Hashtable<>();
+		for (Repository repo : orgRepositories) {
+			String name = repo.getName();
+			if (name.matches(pattern))
+				for (PullRequest request: pullRequestService.getPullRequests(repo, state))
+					if (branch.equals(request.getBase().getRef()) && ( !requests.containsKey(name) || requests.get(name).getNumber() < request.getNumber()) )
+						requests.put(name, request);
+		}
+		
+		return requests.values();
+	}
 	protected void setStatus(Repository repo, String sha, ExtendedCommitStatus status) throws IOException {
 		commitService.createStatus(repo, sha, status);
 	}

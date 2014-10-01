@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Collection;
 
 import nl.tudelft.in4303.grading.IGrader;
 import nl.tudelft.in4303.grading.IResult;
@@ -35,10 +35,33 @@ public class GitHubGrader {
 		git = new GitHubService(username, password);		
 	}
 
+	public void grade(IGrader grader, String assignment, String pattern) {
+	
+		try {
+			Collection<PullRequest> requests = git.getLatestPullRequests(GRADING_ORGANISATION, pattern, assignment, "closed");
+
+			for (PullRequest request : requests) {
+	
+				Repository repo = request.getBase().getRepo();
+				String sha      = request.getHead().getSha();
+				
+				IResult report = grade(grader, repo, sha, new RefSpec("refs/heads/" + assignment));
+				
+				System.out.println(report.getGrade());
+			}
+		
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (GitAPIException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public void feedback(IGrader grader, String assignment, String pattern, int late) {
 
 		try {
-			List<PullRequest> requests = git.getPullRequests(GRADING_ORGANISATION, pattern, "open");
+			Collection<PullRequest> requests = git.getPullRequests(GRADING_ORGANISATION, pattern, "open");
 			
 			for (PullRequest request : requests) {
 			
@@ -47,14 +70,11 @@ public class GitHubGrader {
 					continue;
 				} 
 				
-
 				Repository repo = request.getBase().getRepo();
 				int number      = request.getNumber();
 				String sha      = request.getHead().getSha();
 				
-				markPending(repo, sha);	
-
-				IResult report = grade(grader, repo, new RefSpec("refs/pull/" + number + "/merge"));
+				IResult report = grade(grader, repo, sha, new RefSpec("refs/pull/" + number + "/merge"));
 				
 				ExtendedCommitStatus status = new ExtendedCommitStatus(report);
 				status.setContext(GRADING_CONTEXT);
@@ -91,16 +111,13 @@ public class GitHubGrader {
 		}
 	}
 
-	private void markPending(Repository repo, String sha)
-			throws IOException {
+	private IResult grade(IGrader grader, Repository repo, String sha, RefSpec ref) throws IOException, GitAPIException {	
+
 		ExtendedCommitStatus cstatus = new ExtendedCommitStatus();
 		cstatus.setState("pending");
 		cstatus.setDescription("The assignment is being graded.");
 		cstatus.setContext(GRADING_CONTEXT);
 		git.setStatus(repo, sha, cstatus);
-	}
-	
-	private IResult grade(IGrader grader, Repository repo, RefSpec ref) throws IOException, GitAPIException {	
 
 		File dir = createTemporaryDirectory();
 		Git co = git.checkout(repo, ref, dir);
