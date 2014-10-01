@@ -56,13 +56,20 @@ public class GitHubGrader {
 
 				IResult report = grade(grader, repo, new RefSpec("refs/pull/" + number + "/merge"));
 				
+				ExtendedCommitStatus status = new ExtendedCommitStatus(report);
+				status.setContext(GRADING_CONTEXT);
+				
 				if (late == -1) {
-					ExtendedCommitStatus status = new ExtendedCommitStatus(report);
-					status.setContext(GRADING_CONTEXT);
-					
-					git.setStatus(repo, sha, status);
 					git.addComment(request, autoComment + report.getFeedback());
+				} else {
+					
+					if (report.getStatus() == Status.SUCCESS)
+						status.setDescription("Successful submission without feedback.");
+					
+					System.out.println(report.getFeedback());
 				}
+
+				git.setStatus(repo, sha, status);
 
 				if (report.getStatus() == Status.SUCCESS) {
 					MergeStatus mstatus = git.merge(repo, number, "Merge submission");
