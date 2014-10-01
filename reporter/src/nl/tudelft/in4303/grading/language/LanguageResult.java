@@ -1,21 +1,16 @@
 package nl.tudelft.in4303.grading.language;
 
 import java.io.PrintStream;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import nl.tudelft.in4303.grading.GroupResult;
 import nl.tudelft.in4303.grading.TestsListener;
 
-public class LanguageResult extends GroupResult {
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
-	private final DecimalFormat df = new DecimalFormat("#0.##");
+public class LanguageResult extends GroupResult {
 
 	public LanguageResult(String name, TestsListener listener) {
 		super(name, listener);
-		df.setRoundingMode(RoundingMode.HALF_UP);
 	}
 	
 	@Override

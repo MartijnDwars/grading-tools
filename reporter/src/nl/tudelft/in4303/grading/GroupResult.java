@@ -1,6 +1,8 @@
 package nl.tudelft.in4303.grading;
 
 import java.io.PrintStream;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,9 +21,12 @@ public abstract class GroupResult implements IResult {
 	protected final List<String> errors = new ArrayList<>();
 	protected final TestsListener listener;
 
+	protected final DecimalFormat df = new DecimalFormat("#0.##");
+	
 	public GroupResult(String name, TestsListener listener) {
 		this.name = name;
 		this.listener = listener;
+		df.setRoundingMode(RoundingMode.HALF_UP);
 	}
 	
 	@Override
@@ -101,7 +106,7 @@ public abstract class GroupResult implements IResult {
 
 	private void report(String header, PrintStream stream, boolean details) {
 	
-		stream.println(header + name);
+		stream.println(header + name + " (" + df.format(points) + " out of " + total + " points)");
 		stream.println();
 		
 		report(stream, details);
@@ -112,7 +117,7 @@ public abstract class GroupResult implements IResult {
 		
 		for (GroupResult group : results)
 			if (details)
-				group.report("#" + header + " (" + points + " out of " + total + " points)", stream, details);
+				group.report("#" + header, stream, details);
 			else
 				group.report("#" + header, stream, details);
 	}
