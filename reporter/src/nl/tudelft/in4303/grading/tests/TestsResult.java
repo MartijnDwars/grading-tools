@@ -65,14 +65,16 @@ public class TestsResult extends GroupResult {
 		}
 		
 		if (details) {
-		
-			stream.println("You missed the following erroneous language definitions:");
-			stream.println();
-			
-			for (String missed : missedDescr)
-				stream.println("* "+missed);
-			
-			stream.println();
+			if (missedDescr.size() > 0) { 
+				stream.println("You missed the following erroneous language definitions:");
+				stream.println();
+				
+				for (String missed : missedDescr)
+					stream.println("* "+missed);
+				
+				stream.println();
+			}
+
 			return;
 		}
 		
