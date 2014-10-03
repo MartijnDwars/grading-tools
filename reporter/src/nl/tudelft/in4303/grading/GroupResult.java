@@ -21,7 +21,7 @@ public abstract class GroupResult implements IResult {
 	protected final List<String> errors = new ArrayList<>();
 	protected final TestsListener listener;
 
-	protected final DecimalFormat df = new DecimalFormat("#0.##");
+	protected final DecimalFormat df = new DecimalFormat("#0.0#");
 	
 	public GroupResult(String name, TestsListener listener) {
 		this.name = name;
@@ -107,7 +107,7 @@ public abstract class GroupResult implements IResult {
 	private void report(String header, PrintStream stream, boolean details) {
 	
 		if (details)
-			stream.println(header + name + " (" + df.format(points) + " out of " + total + " points)");
+			stream.println(header + name + " (" + df.format(points) + " out of " + df.format(total) + " points)");
 		else
 			stream.println(header + name);
 
