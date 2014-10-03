@@ -47,7 +47,11 @@ public class GitHubGrader {
 				
 				IResult report = grade(grader, repo, sha, new RefSpec("refs/heads/" + assignment));
 				
-				System.out.println(report.getGrade());
+				ExtendedCommitStatus status = new ExtendedCommitStatus(report);
+				status.setContext(GRADING_CONTEXT);
+				
+				git.addComment(request, autoComment + report.getGrade());
+				git.setStatus(repo, sha, status);
 			}
 		
 		} catch (IOException e) {
