@@ -19,9 +19,15 @@ public class TestsResult extends GroupResult {
 		if (detected) {
 			this.points += points;
 			this.passed++;
+			
+			System.out.println("Detected erroneous language definition.");
+			
 		} else {
 			missed++;
 			missedDescr.add(description);
+			
+			System.out.println("Missed erroneous language definition.");
+			
 		}
 	}
 	
