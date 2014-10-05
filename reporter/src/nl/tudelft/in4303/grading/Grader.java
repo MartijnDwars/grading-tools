@@ -16,7 +16,11 @@ public abstract class Grader implements IGrader {
 
 	public Grader(String config) {
 		try {
-			this.config = new XMLConfiguration(config);
+			XMLConfiguration xmlConfiguration = new XMLConfiguration();
+			xmlConfiguration.setDelimiterParsingDisabled(true);
+			xmlConfiguration.load(config);
+
+			this.config = xmlConfiguration;
 			this.project = this.config.getFile().getParentFile();
 		} catch (ConfigurationException e) {
 			throw new RuntimeException(e);
