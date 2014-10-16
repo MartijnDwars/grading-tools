@@ -8,7 +8,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.metaborg.spt.listener.ITestReporter;
 import org.metaborg.spt.listener.TestReporterProvider;
 
-public abstract class Grader implements IGrader {
+public abstract class Grader {
 
 	protected final XMLConfiguration config;
 	protected final File project;
@@ -38,13 +38,11 @@ public abstract class Grader implements IGrader {
 
 	}
 
-	@Override
 	public IResult check(File repo) {
 	
 		return grade(repo, true);
 	}
 
-	@Override
 	public IResult grade(File repo) {
 	
 		return grade(repo, false);

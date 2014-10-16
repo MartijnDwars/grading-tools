@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 
-import nl.tudelft.in4303.grading.IGrader;
+import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
 import nl.tudelft.in4303.grading.IResult.Status;
 
@@ -35,7 +35,7 @@ public class GitHubGrader {
 		git = new GitHubService(username, password);		
 	}
 
-	public void grade(IGrader grader, String assignment, String pattern) {
+	public void grade(Grader grader, String assignment, String pattern) {
 	
 		try {
 			Collection<PullRequest> requests = git.getLatestPullRequests(GRADING_ORGANISATION, pattern, assignment, "closed");
@@ -44,6 +44,8 @@ public class GitHubGrader {
 	
 				Repository repo = request.getBase().getRepo();
 				String sha      = request.getHead().getSha();
+				
+				System.out.println("Grading pull request " + repo.getName() + "#" + request.getNumber());
 				
 				IResult report = grade(grader, repo, sha, new RefSpec("refs/heads/" + assignment));
 				
@@ -62,7 +64,7 @@ public class GitHubGrader {
 		
 	}
 	
-	public void feedback(IGrader grader, String assignment, String pattern, int late) {
+	public void feedback(Grader grader, String assignment, String pattern, int late) {
 
 		try {
 			Collection<PullRequest> requests = git.getPullRequests(GRADING_ORGANISATION, pattern, "open");
@@ -115,7 +117,7 @@ public class GitHubGrader {
 		}
 	}
 
-	private IResult grade(IGrader grader, Repository repo, String sha, RefSpec ref) throws IOException, GitAPIException {	
+	private IResult grade(Grader grader, Repository repo, String sha, RefSpec ref) throws IOException, GitAPIException {	
 
 		ExtendedCommitStatus cstatus = new ExtendedCommitStatus();
 		cstatus.setState("pending");

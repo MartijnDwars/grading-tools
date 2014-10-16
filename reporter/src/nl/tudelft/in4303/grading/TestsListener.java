@@ -49,8 +49,15 @@ public class TestsListener implements ITestReporter {
 	public void finishTestcase(String testsuiteFile, String description,
 			boolean succeeded, Collection<String> messages) throws Exception {
 		
+		if (succeeded) 
+			System.out.println("## Passed test " + description + " in suite " + testsuiteFile);
+		else
+			System.out.println("## Failed test " + description + " in suite " + testsuiteFile);
+			
 		if (!active)
 			return;
+		
+		System.out.println("* active");
 		
 		if (succeeded)
 			passed.put(testsuiteFile, passed.get(testsuiteFile) + 1);
@@ -59,14 +66,27 @@ public class TestsListener implements ITestReporter {
 		
 		final String key = testsuiteFile + " " + description;
 		
-		if (init) 
-			(succeeded ? valid : invalid).add(key);
-		else 
+		if (init) {
+			if (succeeded) {
+				System.out.println("* valid");
+				valid.add(key);
+			} else {
+				System.out.println("* invalid");
+				invalid.add(key);
+			}
+		} else { 
 			if (!succeeded && valid.contains(key)) {
 				ineffective.remove(key);
 				effective.add(key);
 				detected = true;
+				System.out.println("* effective");
+			} else {
+				if (succeeded) 
+					System.out.println("* ineffective");
+				else
+					System.out.println("* invalid");
 			}
+		}	
 	}
 	
 	public void init() {
