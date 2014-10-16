@@ -1,0 +1,21 @@
+{
+  "name": "git-critter",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "git-critter": "./cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Reinier Hartog <r.m.hartog@hotmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "minimist": "^1.1.0",
+    "q": "^1.0.1",
+    "prompt": "^0.2.14",
+    "github": "^0.2.2",
+    "child-process-promise": "^0.2.0-SNAPSHOT.1389671754086"
+  }
+}
