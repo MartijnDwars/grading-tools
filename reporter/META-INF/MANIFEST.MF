@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1413740790036
+Build-Jdk: 1.7.0_65
+Built-By: guwac
+Bundle-Description: Maven parent POM for Java projects
+Bundle-License: https://www.gnu.org/licenses/lgpl-2.1.html
+Bundle-ManifestVersion: 2
+Bundle-Name: reporter
+Bundle-SymbolicName: reporter
+Bundle-Version: 1.2.0.qualifier
+Created-By: Apache Maven Bundle Plugin
+Export-Package: nl.tudelft.in4303.grading;version="1.2.0",nl.tudelft.in4
+ 303.grading.github;version="1.2.0",nl.tudelft.in4303.grading.language;v
+ ersion="1.2.0",nl.tudelft.in4303.grading.tests;version="1.2.0"
+Import-Package: com.google.gson.reflect;version="[2.2,3)",org.apache.com
+ mons.configuration;version="[1.6,2)",org.apache.commons.io;version="[1.
+ 4,2)",org.apache.commons.io.output;version="[1.4,2)",org.eclipse.egit.g
+ ithub.core;version="[2.1,3)",org.eclipse.egit.github.core.client;versio
+ n="[2.1,3)",org.eclipse.egit.github.core.service;version="[2.1,3)",org.
+ eclipse.jgit.api;version="[3.4,4)",org.eclipse.jgit.api.errors;version=
+ "[3.4,4)",org.eclipse.jgit.lib;version="[3.4,4)",org.eclipse.jgit.trans
+ port;version="[3.4,4)",org.eclipse.jgit.util;version="[3.4,4)",org.meta
+ borg.spt.listener;version="[1.2,2)",org.metaborg.sunshine.drivers,org.m
+ etaborg.sunshine.environment,org.metaborg.sunshine.services.language
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.7))"
+Tool: Bnd-2.3.0.201405100607
