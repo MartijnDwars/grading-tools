@@ -15,25 +15,19 @@ public class TestRunner {
 
 	private final File dir;
 	private final File cache;
-	private static String builder;
+	private final String builder;
 	private final SunshineMainArguments params = new SunshineMainArguments();
 
-	public TestRunner(File dir) {
+	public TestRunner(File dir) throws ConfigurationException {
 
 		this.dir = dir;
 		this.cache = new File(dir, ".cache");
-		if (builder == null) {
-			try {
-				PropertiesConfiguration sptConfig = new PropertiesConfiguration(
-						"spt.properties");
-				builder = sptConfig.getString("spt.builder");
-				final File spt = new File(sptConfig.getFile().getParentFile(),
-						sptConfig.getString("spt.esv"));
-				registerLanguage(spt);
-			} catch (ConfigurationException e) {
-				e.printStackTrace();
-			}
-		}
+		PropertiesConfiguration sptConfig = new PropertiesConfiguration(
+					"spt.properties");
+		builder = sptConfig.getString("spt.builder");
+		final File spt = new File(sptConfig.getFile().getParentFile(),
+				sptConfig.getString("spt.esv"));
+		registerLanguage(spt);
 	}
 
 	public boolean runTests() {

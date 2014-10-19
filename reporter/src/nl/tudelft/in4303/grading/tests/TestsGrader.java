@@ -6,6 +6,7 @@ import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
 import nl.tudelft.in4303.grading.TestRunner;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 
 public class TestsGrader extends Grader {
@@ -17,7 +18,13 @@ public class TestsGrader extends Grader {
 	protected IResult grade(File repo, boolean checkOnly) {
 
 		listener.init();
-		TestRunner runner = new TestRunner(new File(repo, "MiniJava-tests"));
+		TestRunner runner;
+		try {
+			runner = new TestRunner(new File(repo, "MiniJava-tests"));
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			return null;
+		}
 		
 		System.out.println("Running reference language implementation");
 		

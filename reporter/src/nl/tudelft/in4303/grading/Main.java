@@ -17,8 +17,8 @@ public class Main {
 			GitHubGrader grader = new GitHubGrader(user.getString("user"),
 					user.getString("user2"));
 
-//			grader.grade(new TestsGrader(), "assignment1", "^student-jabbink(.*)$");
-			grader.feedback(new LanguageGrader(), "assignment2", "^student-aver(.*)$", -1);
+			grader.grade(new TestsGrader(), "assignment1", "^student-jabbink(.*)$");
+//			grader.grade(new LanguageGrader(), "assignment2", "^student-pbruss(.*)$");
 
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
