@@ -52,7 +52,8 @@ public class TestRunner {
 
 	public static void registerLanguage(File esv) {
 
-		ServiceRegistry.INSTANCE().getService(LanguageDiscoveryService.class)
-				.discover(esv.getParentFile().getParentFile().toPath());
+		LanguageDiscoveryService discoveryService = ServiceRegistry.INSTANCE().getService(LanguageDiscoveryService.class);
+		
+		discoveryService.discover(esv.getParentFile().getParentFile().toPath());
 	}
 }
