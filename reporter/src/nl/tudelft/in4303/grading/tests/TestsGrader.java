@@ -52,7 +52,7 @@ public class TestsGrader extends Grader {
 				HierarchicalConfiguration langConf = (HierarchicalConfiguration) current;
 
 				final String esvPath = langConf.getString("[@esv]");
-				TestRunner.registerLanguage(new File(project, esvPath));
+				runner.registerLanguage(new File(project, esvPath));
 
 				System.out.println("# run " + esvPath);
 				if (!runner.runTests())

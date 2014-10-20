@@ -8,7 +8,6 @@ import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
 import nl.tudelft.in4303.grading.TestRunner;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 
 public class LanguageGrader extends Grader {
@@ -49,7 +48,22 @@ public class LanguageGrader extends Grader {
 			};
 
 		try {
-			TestRunner.registerLanguage(esv);
+			TestRunner runner = new TestRunner(project);
+			runner.registerLanguage(esv);
+			
+			LanguageResult result = new LanguageResult(config.getString("[@name]", ""), listener);
+			
+			if (!runner.runTests())
+				result.error("");
+			
+			if (!checkOnly && !result.hasErrors()) {
+				result.finishedGroup(analyseTests(config.configurationAt("group")));
+				result.succeed();
+			}
+			
+			listener.exit();
+			return result;
+
 		} catch (final Exception e) {
 			return new IResult() {
 				
@@ -77,25 +91,6 @@ public class LanguageGrader extends Grader {
 				}
 			};
 		}
-		
-		LanguageResult result = new LanguageResult(config.getString("[@name]", ""), listener);
-		
-		try {
-			if (!new TestRunner(project).runTests())
-				result.error("");
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-			result.error("");
-			return result;
-		}
-		
-		if (!checkOnly && !result.hasErrors()) {
-			result.finishedGroup(analyseTests(config.configurationAt("group")));
-			result.succeed();
-		}
-		
-		listener.exit();
-		return result;
 	}
 
 	private LanguageResult analyseTests(HierarchicalConfiguration config) {

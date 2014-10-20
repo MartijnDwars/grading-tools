@@ -13,20 +13,25 @@ import org.metaborg.sunshine.services.language.LanguageDiscoveryService;
 
 public class TestRunner {
 
-	private final File dir;
 	private final File cache;
-	private final String builder;
-	private final SunshineMainArguments params = new SunshineMainArguments();
+	
+	public TestRunner(File dir) throws ConfigurationException  {
+		PropertiesConfiguration sptConfig = new PropertiesConfiguration("spt.properties");
 
-	public TestRunner(File dir) throws ConfigurationException {
+		final SunshineMainArguments params = new SunshineMainArguments();
 
-		this.dir = dir;
 		this.cache = new File(dir, ".cache");
-		PropertiesConfiguration sptConfig = new PropertiesConfiguration(
-					"spt.properties");
-		builder = sptConfig.getString("spt.builder");
-		final File spt = new File(sptConfig.getFile().getParentFile(),
-				sptConfig.getString("spt.esv"));
+		params.project        = dir.getPath();
+		params.filestobuildon = ".";
+		params.noanalysis     = true;
+		params.builder        = sptConfig.getString("spt.builder");
+		
+		File spt = new File(sptConfig.getFile().getParentFile(), sptConfig.getString("spt.esv"));
+
+		ServiceRegistry env = ServiceRegistry.INSTANCE();
+		env.reset();
+
+		org.metaborg.sunshine.drivers.Main.initServices(env, params);
 		registerLanguage(spt);
 	}
 
@@ -37,20 +42,10 @@ public class TestRunner {
 		} catch (IOException e) {
 		}
 
-		ServiceRegistry env = ServiceRegistry.INSTANCE();
-		env.reset();
-		
-		params.builder = builder;
-		params.filestobuildon = ".";
-		params.noanalysis = true;
-		params.project = dir.getPath();
-		
-		org.metaborg.sunshine.drivers.Main.initServices(env, params);
-		
 		return new SunshineMainDriver().run() == 0;
 	}
 
-	public static void registerLanguage(File esv) {
+	public void registerLanguage(File esv) {
 
 		LanguageDiscoveryService discoveryService = ServiceRegistry.INSTANCE().getService(LanguageDiscoveryService.class);
 		
