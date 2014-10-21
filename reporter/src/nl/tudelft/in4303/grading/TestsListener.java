@@ -4,13 +4,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.metaborg.spt.listener.ITestReporter;
 
-/**
- * @author guwac
- *
- */
 public class TestsListener implements ITestReporter {
+	
+	protected static final Logger logger = LogManager.getLogger();
 	
 	private final HashSet<String> valid       = new HashSet<String>(500);
 	private final HashSet<String> invalid     = new HashSet<String>(500);
@@ -32,13 +32,14 @@ public class TestsListener implements ITestReporter {
 	public void addTestsuite(String name, String filename) throws Exception {
 		passed.put(filename, 0);
 		missed.put(filename, 0);
-		if (active && detected) throw new RuntimeException();
+//		if (active && detected) throw new RuntimeException();
 	}
 
 	@Override
 	public void addTestcase(String testsuiteFile, String description)
 			throws Exception {
-		if (active && (detected || invalid.contains(testsuiteFile + " " + description))) throw new RuntimeException();	}
+//		if (active && (detected || invalid.contains(testsuiteFile + " " + description))) throw new RuntimeException()
+	}
 
 	@Override
 	public void startTestcase(String testsuiteFile, String description)
@@ -49,12 +50,6 @@ public class TestsListener implements ITestReporter {
 	public void finishTestcase(String testsuiteFile, String description,
 			boolean succeeded, Collection<String> messages) throws Exception {
 		
-//		if (succeeded) 
-//			System.out.println("## Passed test " + description + " in suite " + testsuiteFile);
-//		else
-//			System.out.println("## Failed test " + description + " in suite " + testsuiteFile);
-//		System.out.println("* active");
-			
 		if (!active)
 			return;
 				
@@ -67,24 +62,21 @@ public class TestsListener implements ITestReporter {
 		
 		if (init) {
 			if (succeeded) {
-//				System.out.println("* valid");
 				valid.add(key);
+				logger.trace("valid test {} in suite {}", description, testsuiteFile);
 			} else {
-//				System.out.println("* invalid");
 				invalid.add(key);
+				logger.trace("invalid test {} in suite {}", description, testsuiteFile);
 			}
 		} else { 
-			if (!succeeded && valid.contains(key)) {
+			if (succeeded) 
+				logger.trace("ineffective test {} in suite {}", description, testsuiteFile);
+			else if (valid.contains(key)) {
 				ineffective.remove(key);
 				effective.add(key);
 				detected = true;
-//				System.out.println("* effective");
-			} else {
-//				if (succeeded) 
-//					System.out.println("* ineffective");
-//				else
-//					System.out.println("* invalid");
-			}
+				logger.trace("effective test {} in suite {}", description, testsuiteFile);
+			} 
 		}	
 	}
 	

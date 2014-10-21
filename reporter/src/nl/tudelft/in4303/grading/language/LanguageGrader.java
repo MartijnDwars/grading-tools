@@ -8,6 +8,7 @@ import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
 import nl.tudelft.in4303.grading.TestRunner;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 
 public class LanguageGrader extends Grader {
@@ -23,7 +24,9 @@ public class LanguageGrader extends Grader {
 		
 		File esv = new File(new File(new File(repo, "MiniJava"), "include"), "MiniJava.packed.esv");
 		
-		if (!esv.exists())
+		if (!esv.exists()) {
+			logger.error("missing ESV file");
+
 			return new IResult() {
 				
 				@Override
@@ -46,15 +49,17 @@ public class LanguageGrader extends Grader {
 					return "Cannot find file `MiniJava/include/MiniJava.packed.esv`.";
 				}
 			};
-
+		}
+		
 		try {
 			TestRunner runner = new TestRunner(project);
 			runner.registerLanguage(esv);
 			
+			logger.info("running tests");
+
 			LanguageResult result = new LanguageResult(config.getString("[@name]", ""), listener);
 			
-			if (!runner.runTests())
-				result.error("");
+			runTests(runner, result);
 			
 			if (!checkOnly && !result.hasErrors()) {
 				result.finishedGroup(analyseTests(config.configurationAt("group")));
@@ -64,6 +69,9 @@ public class LanguageGrader extends Grader {
 			listener.exit();
 			return result;
 
+		} catch (final ConfigurationException e) {
+			logger.fatal("SPT configuration", e);
+			throw new RuntimeException(e);
 		} catch (final Exception e) {
 			return new IResult() {
 				
@@ -107,7 +115,7 @@ public class LanguageGrader extends Grader {
 			int    passed = listener.getPassed(spt);
 			int    missed = listener.getMissed(spt);
 	
-			result.finishedSuite(passed, missed, points, desc);
+			result.finishedSuite(passed, missed, desc, points);
 		}
 		
 		for (Object group : config.configurationsAt("group"))

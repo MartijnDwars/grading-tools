@@ -3,16 +3,21 @@ package nl.tudelft.in4303.grading.tests;
 import java.io.File;
 
 import nl.tudelft.in4303.grading.Grader;
+import nl.tudelft.in4303.grading.GroupResult;
 import nl.tudelft.in4303.grading.IResult;
 import nl.tudelft.in4303.grading.TestRunner;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 
 public class TestsGrader extends Grader {
 
-	public TestsGrader() {
+	private final String p;
+	
+	public TestsGrader(String p) {
 		super("languages.xml");
+		this.p = p;
 	}
 
 	protected IResult grade(File repo, boolean checkOnly) {
@@ -20,19 +25,19 @@ public class TestsGrader extends Grader {
 		listener.init();
 		TestRunner runner;
 		try {
-			runner = new TestRunner(new File(repo, "MiniJava-tests"));
+			runner = new TestRunner(new File(repo, p));
 		} catch (ConfigurationException e) {
-			e.printStackTrace();
-			return null;
+			logger.fatal("SPT configuration", e);
+			throw new RuntimeException(e);
 		}
 		
-//		System.out.println("Running reference language implementation");
+		logger.info("running reference language implementation");
 		
-		TestsResult result = runLanguages(runner, config);
+		GroupResult result = runLanguages(runner, config);
 		
 		if (!checkOnly && !result.hasErrors()) {
 		
-//			System.out.println("Running erroneous language implementations");
+			logger.info("running erroneous language implementations");
 			result.finishedGroup(runTests(runner, config.configurationAt("group")));
 		}
 		
@@ -40,41 +45,43 @@ public class TestsGrader extends Grader {
 		return result;
 	}
 
-	private TestsResult runLanguages(TestRunner runner, HierarchicalConfiguration config) {
+	private GroupResult runLanguages(TestRunner runner, HierarchicalConfiguration config) {
 		
-		TestsResult result = new TestsResult(config.getString("[@name]", ""),
-				listener);
+		final String name = config.getString("[@name]", "");
+		
+		logger.debug(name);
+		
+		TestsResult result = new TestsResult(name, listener);
 
 		try {
 
 			for (Object current : config.configurationsAt("language")) {
 
-				HierarchicalConfiguration langConf = (HierarchicalConfiguration) current;
+				final Configuration langConf = (Configuration) current;
+				final String esvPath     = langConf.getString("[@esv]");
+				final String description = langConf.getString("[@description]");
+				final double points      = langConf.getDouble("[@points]", 0);
 
-				final String esvPath = langConf.getString("[@esv]");
 				runner.registerLanguage(new File(project, esvPath));
+				logger.debug("run {}", esvPath);
 
-//				System.out.println("# run " + esvPath);
-				if (!runner.runTests())
-					result.error("");
-
-				result.finishedLanguage(listener.newLanguage(),
-						langConf.getString("[@description]"), langConf.getDouble("[@points]", 0));
+				runTests(runner, result);
+				
+				result.finishedLanguage(listener.newLanguage(), description, points);
 			}
 			
 			result.succeed();
 			
 		} catch (Exception e) {
-			System.out.println("caught");
-			e.printStackTrace(System.err);
-			result.error(e.toString());
+			logger.fatal("language", e);
 		}
 		
 		return result;
 	}
-	private TestsResult runTests(TestRunner runner, HierarchicalConfiguration config) {
 
-		TestsResult result = runLanguages(runner, config);
+	private GroupResult runTests(TestRunner runner, HierarchicalConfiguration config) {
+
+		GroupResult result = runLanguages(runner, config);
 
 		try {
 
@@ -84,7 +91,7 @@ public class TestsGrader extends Grader {
 			result.succeed();
 
 		} catch (Exception e) {
-			result.error(e.toString());
+			logger.fatal("group", e);
 		}
 		return result;
 	}

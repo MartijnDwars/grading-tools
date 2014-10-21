@@ -87,12 +87,14 @@ public class LanguageResult extends GroupResult {
 			stream.println("You pass less tests than you fail.");
 	}
 
-	public void finishedSuite(int passed, int missed, double points, String description) {
+	public void finishedSuite(int passed, int missed, String description, double points) {
 			
 			this.total  += points;
 			this.points += points * passed / (passed + missed);
 			this.passed += passed;
 			this.missed += missed;
+
+			logger.debug("{} ({} points), detected {}, missed {}");
 	}
 	
 }

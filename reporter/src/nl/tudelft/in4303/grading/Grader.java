@@ -5,11 +5,14 @@ import java.util.Iterator;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.metaborg.spt.listener.ITestReporter;
 import org.metaborg.spt.listener.TestReporterProvider;
 
 public abstract class Grader {
 
+	protected static final Logger logger = LogManager.getLogger();
 	protected final XMLConfiguration config;
 	protected final File project;
 	protected final TestsListener listener;
@@ -23,6 +26,7 @@ public abstract class Grader {
 			this.config = xmlConfiguration;
 			this.project = this.config.getFile().getParentFile();
 		} catch (ConfigurationException e) {
+			logger.fatal("configuration", e);
 			throw new RuntimeException(e);
 		}
 
@@ -49,5 +53,12 @@ public abstract class Grader {
 	}
 
 	protected abstract IResult grade(File repo, boolean checkOnly);
+
+	protected void runTests(TestRunner runner, GroupResult result) {
+		if (!runner.runTests()) {
+			result.error("");
+			logger.error("could not run tests");
+		}
+	}
 
 }
