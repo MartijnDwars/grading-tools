@@ -26,13 +26,13 @@ public class TestsGrader extends Grader {
 			return null;
 		}
 		
-		System.out.println("Running reference language implementation");
+//		System.out.println("Running reference language implementation");
 		
 		TestsResult result = runLanguages(runner, config);
 		
 		if (!checkOnly && !result.hasErrors()) {
 		
-			System.out.println("Running erroneous language implementations");
+//			System.out.println("Running erroneous language implementations");
 			result.finishedGroup(runTests(runner, config.configurationAt("group")));
 		}
 		
@@ -54,7 +54,7 @@ public class TestsGrader extends Grader {
 				final String esvPath = langConf.getString("[@esv]");
 				runner.registerLanguage(new File(project, esvPath));
 
-				System.out.println("# run " + esvPath);
+//				System.out.println("# run " + esvPath);
 				if (!runner.runTests())
 					result.error("");
 
