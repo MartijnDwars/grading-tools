@@ -49,9 +49,7 @@ public class TestsListener implements ITestReporter {
 	@Override
 	public void finishTestcase(String testsuiteFile, String description,
 			boolean succeeded, Collection<String> messages) throws Exception {
-		
-		logger.debug("finished test {} in suite {}: {}", description, testsuiteFile, succeeded);
-		
+				
 		if (!active)
 			return;
 				
