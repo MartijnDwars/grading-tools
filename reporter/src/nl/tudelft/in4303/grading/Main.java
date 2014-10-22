@@ -1,7 +1,6 @@
 package nl.tudelft.in4303.grading;
 
 import nl.tudelft.in4303.grading.github.GitHubGrader;
-import nl.tudelft.in4303.grading.language.LanguageGrader;
 import nl.tudelft.in4303.grading.tests.TestsGrader;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -17,8 +16,7 @@ public class Main {
 			GitHubGrader grader = new GitHubGrader(user.getString("user"),
 					user.getString("user2"));
 
-			grader.grade(new TestsGrader(), "assignment1", "^student-jabbink(.*)$");
-//			grader.grade(new LanguageGrader(), "assignment2", "^student-pbruss(.*)$");
+			grader.grade(new TestsGrader("MiniJava-tests"), "assignment1", "^student-"+ args[0] +"(.*)$");
 
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
