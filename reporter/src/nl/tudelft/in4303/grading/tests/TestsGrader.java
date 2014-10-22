@@ -49,7 +49,7 @@ public class TestsGrader extends Grader {
 		
 		final String name = config.getString("[@name]", "");
 		
-		logger.debug(name);
+		logger.debug("group {}", name);
 		
 		TestsResult result = new TestsResult(name, listener);
 
@@ -62,8 +62,8 @@ public class TestsGrader extends Grader {
 				final String description = langConf.getString("[@description]");
 				final double points      = langConf.getDouble("[@points]", 0);
 
-				runner.registerLanguage(new File(project, esvPath));
-				logger.debug("run {}", esvPath);
+				runner.registerLanguage(new File(project, esvPath).getParentFile());
+				logger.debug("running {}", esvPath);
 
 				runTests(runner, result);
 				

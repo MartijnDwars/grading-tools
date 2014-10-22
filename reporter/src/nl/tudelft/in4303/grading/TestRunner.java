@@ -32,7 +32,7 @@ public class TestRunner {
 		env.reset();
 
 		org.metaborg.sunshine.drivers.Main.initServices(env, params);
-		registerLanguage(spt);
+		registerLanguage(spt.getParentFile());
 	}
 
 	public boolean runTests() {
@@ -45,10 +45,10 @@ public class TestRunner {
 		return new SunshineMainDriver().run() == 0;
 	}
 
-	public void registerLanguage(File esv) {
+	public void registerLanguage(File dir) {
 
 		LanguageDiscoveryService discoveryService = ServiceRegistry.INSTANCE().getService(LanguageDiscoveryService.class);
 		
-		discoveryService.discover(esv.getParentFile().getParentFile().toPath());
+		discoveryService.discover(dir.toPath());
 	}
 }

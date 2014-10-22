@@ -10,7 +10,7 @@ import org.metaborg.spt.listener.ITestReporter;
 
 public class TestsListener implements ITestReporter {
 	
-	protected static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger();
 	
 	private final HashSet<String> valid       = new HashSet<String>(500);
 	private final HashSet<String> invalid     = new HashSet<String>(500);
@@ -50,6 +50,8 @@ public class TestsListener implements ITestReporter {
 	public void finishTestcase(String testsuiteFile, String description,
 			boolean succeeded, Collection<String> messages) throws Exception {
 		
+		logger.debug("finished test {} in suite {}: {}", description, testsuiteFile, succeeded);
+		
 		if (!active)
 			return;
 				
@@ -66,16 +68,16 @@ public class TestsListener implements ITestReporter {
 				logger.trace("valid test {} in suite {}", description, testsuiteFile);
 			} else {
 				invalid.add(key);
-				logger.trace("invalid test {} in suite {}", description, testsuiteFile);
+				logger.debug("invalid test {} in suite {}", description, testsuiteFile);
 			}
 		} else { 
 			if (succeeded) 
 				logger.trace("ineffective test {} in suite {}", description, testsuiteFile);
-			else if (valid.contains(key)) {
+			else if (valid.contains(key) && !invalid.contains(key)) {
 				ineffective.remove(key);
 				effective.add(key);
 				detected = true;
-				logger.trace("effective test {} in suite {}", description, testsuiteFile);
+				logger.debug("effective test {} in suite {}", description, testsuiteFile);
 			} 
 		}	
 	}

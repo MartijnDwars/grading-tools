@@ -11,6 +11,8 @@ import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
 import nl.tudelft.in4303.grading.IResult.Status;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.egit.github.core.MergeStatus;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.Repository;
@@ -21,6 +23,8 @@ import org.eclipse.jgit.util.FileUtils;
 
 public class GitHubGrader {
 
+	private static final Logger logger = LogManager.getLogger();
+	
 	static final String GRADING_ORGANISATION = "TUDelft-IN4303";
 	static final String GRADING_CONTEXT = "grading/in4303";
 
@@ -45,7 +49,7 @@ public class GitHubGrader {
 				Repository repo = request.getBase().getRepo();
 				String sha      = request.getHead().getSha();
 				
-				System.out.println("Grading pull request " + repo.getName() + "#" + request.getNumber());
+				logger.info("grading pull request {}#{}", repo.getName(), request.getNumber());
 				
 				IResult report = grade(grader, repo, sha, new RefSpec("refs/heads/" + assignment));
 				

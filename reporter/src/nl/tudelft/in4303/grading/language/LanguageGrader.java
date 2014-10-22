@@ -22,7 +22,8 @@ public class LanguageGrader extends Grader {
 		
 		listener.init();
 		
-		File esv = new File(new File(new File(repo, "MiniJava"), "include"), "MiniJava.packed.esv");
+		File include = new File(new File(repo, "MiniJava"), "include");
+		File esv     = new File(include, "MiniJava.packed.esv");
 		
 		if (!esv.exists()) {
 			logger.error("missing ESV file");
@@ -53,7 +54,7 @@ public class LanguageGrader extends Grader {
 		
 		try {
 			TestRunner runner = new TestRunner(project);
-			runner.registerLanguage(esv);
+			runner.registerLanguage(include);
 			
 			logger.info("running tests");
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="OFF">
+  <appenders>
+  	
+    <console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%msg%n"/>
+    </console>
+  </appenders>
+  <loggers>
+    <logger name="nl.tudelft.in4303.grading" additivity="false" level="debug">
+      <appender-ref ref="Console"/>
+    </logger>
+  </loggers>
+</configuration>
