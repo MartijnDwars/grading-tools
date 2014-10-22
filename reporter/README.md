@@ -18,7 +18,7 @@ For example, with the following directory structure:
 |-- grading-releng
 |   |-- grading-tools
 |   |-- spt
-``
+```
 
 run the following command:
 
