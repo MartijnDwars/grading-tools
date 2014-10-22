@@ -62,7 +62,7 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
-										<Main-Class>org.metaborg.spt.listener.grading.Main</Main-Class>
+										<Main-Class>nl.tudelft.in4303.grading.Main</Main-Class>
 									</manifestEntries>
 								</transformer>
 							</transformers>
