@@ -37,3 +37,12 @@ java -classpath "grading-releng/grading-tools/reporter/target/reporter-1.2.0-SNA
 ```
 
 to grade the student `johndoe`.
+
+# Fix erroneous submissions
+
+Errors in student submissions (e.g. parse errors in SPT) are quite common. 
+Some of these need to be fixed manually in order to let the grading tool succeed.
+Apply those fixes in a separate branch, e.g. `assignment1-fix`, 
+create a pull request against the original branch,
+merge this pull request, 
+and run the grading tool again.
