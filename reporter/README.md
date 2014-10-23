@@ -3,6 +3,11 @@
 For each lab, we have an Eclipse project with erroneous language definitions or SPT tests.
 Before we can grade student submissions, we need to build the Eclipse project.
 Clone the `grading` repository and import the relevant project (e.g. `lab1`) into Eclipse and run `build.xml`.
+Use the following external tools configuration: 
+* Refresh: Select *The project containing the selected resource*
+* Build: Deselect everything
+* Properties: Select *Use global properties as specified in the Ant runtime preferences*
+* JRE: Select *Run in the same JRE as the workspace*
 
 # Build grading tool
 
