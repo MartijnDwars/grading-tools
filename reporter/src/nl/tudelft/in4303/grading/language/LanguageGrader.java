@@ -6,10 +6,10 @@ import java.io.StringWriter;
 
 import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
-import nl.tudelft.in4303.grading.TestRunner;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.metaborg.spoofax.testrunner.core.TestRunner;
 
 public class LanguageGrader extends Grader {
 
@@ -22,8 +22,9 @@ public class LanguageGrader extends Grader {
 		
 		listener.init();
 		
-		File include = new File(new File(repo, "MiniJava"), "include");
-		File esv     = new File(include, "MiniJava.packed.esv");
+		File lang = new File(repo, "MiniJava");
+		File include = new File(lang, "include");
+		File esv = new File(include, "MiniJava.packed.esv");
 		
 		if (!esv.exists()) {
 			logger.error("missing ESV file");
@@ -53,8 +54,9 @@ public class LanguageGrader extends Grader {
 		}
 		
 		try {
-			TestRunner runner = new TestRunner(project);
-			runner.registerLanguage(include);
+			TestRunner runner = new TestRunner(project.getAbsolutePath(), "testrunnerfile");
+			runner.registerSPT();
+			runner.registerLanguage(include.getAbsolutePath());
 			
 			logger.info("running tests");
 

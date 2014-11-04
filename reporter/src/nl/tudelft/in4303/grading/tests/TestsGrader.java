@@ -5,11 +5,10 @@ import java.io.File;
 import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.GroupResult;
 import nl.tudelft.in4303.grading.IResult;
-import nl.tudelft.in4303.grading.TestRunner;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.metaborg.spoofax.testrunner.core.TestRunner;
 
 public class TestsGrader extends Grader {
 
@@ -23,13 +22,7 @@ public class TestsGrader extends Grader {
 	protected IResult grade(File repo, boolean checkOnly) {
 
 		listener.init();
-		TestRunner runner;
-		try {
-			runner = new TestRunner(new File(repo, p));
-		} catch (ConfigurationException e) {
-			logger.fatal("SPT configuration", e);
-			throw new RuntimeException(e);
-		}
+		TestRunner runner = new TestRunner(new File(repo, p).getAbsolutePath(), "testrunnerfile");
 		
 		logger.info("running reference language implementation");
 		
@@ -62,7 +55,8 @@ public class TestsGrader extends Grader {
 				final String description = langConf.getString("[@description]");
 				final double points      = langConf.getDouble("[@points]", 0);
 
-				runner.registerLanguage(new File(project, esvPath).getParentFile());
+				runner.registerSPT();
+				runner.registerLanguage(new File(project, esvPath).getParentFile().getAbsolutePath());
 				logger.debug("running {}", esvPath);
 
 				runTests(runner, result);

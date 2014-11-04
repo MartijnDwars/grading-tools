@@ -1,12 +1,14 @@
 package nl.tudelft.in4303.grading;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.metaborg.spoofax.testrunner.core.TestRunner;
 import org.metaborg.spt.listener.ITestReporter;
 import org.metaborg.spt.listener.TestReporterProvider;
 
@@ -54,8 +56,8 @@ public abstract class Grader {
 
 	protected abstract IResult grade(File repo, boolean checkOnly);
 
-	protected void runTests(TestRunner runner, GroupResult result) {
-		if (!runner.runTests()) {
+	protected void runTests(TestRunner runner, GroupResult result) throws IOException {
+		if (runner.run() != 0) {
 			result.error("");
 			logger.error("could not run tests");
 		}
