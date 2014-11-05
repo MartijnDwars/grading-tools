@@ -38,20 +38,21 @@ public class GitHubGrader {
 
 	private final GitHubService git;
 
-	public GitHubGrader() throws ConfigurationException {
-		this("gh.properties");
+	public GitHubGrader(boolean runDry) throws ConfigurationException {
+		this("gh.properties", runDry);
 	}
 	
-	public GitHubGrader(String config) throws ConfigurationException {
-		this(new PropertiesConfiguration(config));
+	public GitHubGrader(String config, boolean runDry) throws ConfigurationException {
+		this(new PropertiesConfiguration(config), runDry);
 	}
 	
-	public GitHubGrader(AbstractConfiguration config) {
-		this(config.getString("user"), config.getString("user2"));
+	public GitHubGrader(AbstractConfiguration config, boolean runDry) {
+		this(config.getString("user"), config.getString("user2"), runDry);
 	}
 	
-	public GitHubGrader(String username, String password) {
-		git = new GitHubService(username, password);		
+	public GitHubGrader(String username, String password, boolean runDry) {
+		git = new GitHubService(username, password);	
+		git.runDry(runDry);
 	}
 
 	public void grade(Grader grader, String assignment, String pattern) {

@@ -35,7 +35,8 @@ public class GitHubService {
 	protected ExtendedCommitService commitService;
 	protected IssueService issueService;
 	protected CredentialsProvider credentialsProvider;
-
+	private boolean dryrun;
+	
 	public GitHubService(String username, String password) {
 		GitHubClient client = new GitHubClient();
 		client.setCredentials(username, password);
@@ -46,10 +47,18 @@ public class GitHubService {
 		pullRequestService = new PullRequestService(client);
 		commitService = new ExtendedCommitService(client);
 		issueService = new IssueService(client);
+		dryrun = false;
 	}
 
+	protected void runDry(boolean dryrun) {
+		this.dryrun = dryrun;
+	}
+	
 	protected void addComment(PullRequest request, String comment) throws IOException {
-		issueService.createComment(request.getBase().getRepo(), request.getNumber(), comment);
+		if (dryrun)
+			System.out.println(comment);
+		else
+			issueService.createComment(request.getBase().getRepo(), request.getNumber(), comment);
 	}
 	
 	protected Collection<PullRequest> getPullRequests(String org, String pattern, String state) throws IOException {
@@ -100,7 +109,11 @@ public class GitHubService {
 		return requests.values();
 	}
 	protected void setStatus(Repository repo, String sha, ExtendedCommitStatus status) throws IOException {
-		commitService.createStatus(repo, sha, status);
+		if (dryrun)
+			System.out.println(status.getDescription());
+		else
+			commitService.createStatus(repo, sha, status);
+		
 	}
 
 	protected Git checkout(Repository repo, RefSpec refSpec, File tmpDir)

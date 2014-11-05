@@ -14,6 +14,9 @@ public class CLOptions {
 	@Parameter(names={"-d", "-details", "-g", "-grade"}, description="generate detailed report")
 	private boolean details = false;
 	
+	@Parameter(names={"-t", "-test"}, description="do not send comments to github")
+	private boolean runDry = false;
+	
 	@Parameter(names={"-l", "-late"}, description="number of late days")
 	private int late = 0;
 
@@ -29,6 +32,10 @@ public class CLOptions {
 		return details;
 	}
 
+	public boolean runDry() {
+		return runDry;
+	}
+	
 	public int getLate() {
 		return late;
 	}

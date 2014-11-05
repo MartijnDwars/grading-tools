@@ -17,8 +17,8 @@ public class Main {
 		new JCommander(options, args);
 		
 		try {
-			GitHubGrader grader = new GitHubGrader();
-
+			GitHubGrader grader = new GitHubGrader(options.runDry());
+			
 			Grader reporter;
 
 			if (ConfigurationUtils.locate("tests.xml") != null)
