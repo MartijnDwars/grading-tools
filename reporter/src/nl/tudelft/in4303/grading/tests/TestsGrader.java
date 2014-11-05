@@ -12,17 +12,21 @@ import org.metaborg.spoofax.testrunner.core.TestRunner;
 
 public class TestsGrader extends Grader {
 
-	private final String p;
+	private final String path;
 	
-	public TestsGrader(String p) {
+	public TestsGrader() {
+		this("MiniJava-tests");
+	}
+	
+	public TestsGrader(String path) {
 		super("languages.xml");
-		this.p = p;
+		this.path = path;
 	}
 
 	protected IResult grade(File repo, boolean checkOnly) {
 
 		listener.init();
-		TestRunner runner = new TestRunner(new File(repo, p).getAbsolutePath(), "testrunnerfile");
+		TestRunner runner = new TestRunner(new File(repo, path).getAbsolutePath(), "testrunnerfile");
 		
 		logger.info("running reference language implementation");
 		

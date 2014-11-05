@@ -11,6 +11,9 @@ import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
 import nl.tudelft.in4303.grading.IResult.Status;
 
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.egit.github.core.MergeStatus;
@@ -35,6 +38,18 @@ public class GitHubGrader {
 
 	private final GitHubService git;
 
+	public GitHubGrader() throws ConfigurationException {
+		this("gh.properties");
+	}
+	
+	public GitHubGrader(String config) throws ConfigurationException {
+		this(new PropertiesConfiguration(config));
+	}
+	
+	public GitHubGrader(AbstractConfiguration config) {
+		this(config.getString("user"), config.getString("user2"));
+	}
+	
 	public GitHubGrader(String username, String password) {
 		git = new GitHubService(username, password);		
 	}
