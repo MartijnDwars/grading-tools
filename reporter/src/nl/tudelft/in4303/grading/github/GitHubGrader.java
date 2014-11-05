@@ -55,7 +55,7 @@ public class GitHubGrader {
 		git.runDry(runDry);
 	}
 
-	public void grade(Grader grader, String assignment, String pattern) {
+	public void grade(Grader grader, String assignment, String pattern) throws Exception {
 	
 		try {
 			Collection<PullRequest> requests = git.getLatestPullRequests(GRADING_ORGANISATION, pattern, assignment, "closed");
@@ -84,7 +84,7 @@ public class GitHubGrader {
 		
 	}
 	
-	public void feedback(Grader grader, String assignment, String pattern, int late) {
+	public void feedback(Grader grader, String assignment, String pattern, int late) throws Exception {
 
 		try {
 			Collection<PullRequest> requests = git.getPullRequests(GRADING_ORGANISATION, pattern, "open");
@@ -137,7 +137,7 @@ public class GitHubGrader {
 		}
 	}
 
-	private IResult grade(Grader grader, Repository repo, String sha, RefSpec ref) throws IOException, GitAPIException {	
+	private IResult grade(Grader grader, Repository repo, String sha, RefSpec ref) throws Exception {	
 
 		ExtendedCommitStatus cstatus = new ExtendedCommitStatus();
 		cstatus.setState("pending");

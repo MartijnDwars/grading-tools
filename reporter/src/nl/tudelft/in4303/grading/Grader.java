@@ -44,17 +44,17 @@ public abstract class Grader {
 
 	}
 
-	public IResult check(File repo) {
+	public IResult check(File repo) throws Exception {
 	
 		return grade(repo, true);
 	}
 
-	public IResult grade(File repo) {
+	public IResult grade(File repo) throws Exception {
 	
 		return grade(repo, false);
 	}
 
-	protected abstract IResult grade(File repo, boolean checkOnly);
+	protected abstract IResult grade(File repo, boolean checkOnly) throws Exception;
 
 	protected void runTests(TestRunner runner, GroupResult result) throws IOException {
 		if (runner.run() != 0) {

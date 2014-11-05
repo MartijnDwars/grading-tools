@@ -1,6 +1,7 @@
 package nl.tudelft.in4303.grading.language;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -18,7 +19,7 @@ public class LanguageGrader extends Grader {
 	}
 
 	@Override
-	protected IResult grade(File repo, boolean checkOnly) {
+	protected IResult grade(File repo, boolean checkOnly) throws Exception {
 		
 		listener.init();
 		
@@ -75,33 +76,34 @@ public class LanguageGrader extends Grader {
 		} catch (final ConfigurationException e) {
 			logger.fatal("SPT configuration", e);
 			throw new RuntimeException(e);
-		} catch (final Exception e) {
-			return new IResult() {
-				
-				@Override
-				public String getStatusDescription() {
-					return "Your submission crashes.";
-				}
-				
-				@Override
-				public Status getStatus() {
-					return Status.ERROR;
-				}
-				
-				@Override
-				public String getGrade() {
-					return getFeedback();
-				}
-				
-				@Override
-				public String getFeedback() {
-					StringWriter sw = new StringWriter();
-					PrintWriter pw = new PrintWriter(sw);
-					e.printStackTrace(pw);
-					return sw.toString();
-				}
-			};
 		}
+//		} catch (final Exception e) {
+//			return new IResult() {
+//				
+//				@Override
+//				public String getStatusDescription() {
+//					return "Your submission crashes.";
+//				}
+//				
+//				@Override
+//				public Status getStatus() {
+//					return Status.ERROR;
+//				}
+//				
+//				@Override
+//				public String getGrade() {
+//					return getFeedback();
+//				}
+//				
+//				@Override
+//				public String getFeedback() {
+//					StringWriter sw = new StringWriter();
+//					PrintWriter pw = new PrintWriter(sw);
+//					e.printStackTrace(pw);
+//					return sw.toString();
+//				}
+//			};
+//		}
 	}
 
 	private LanguageResult analyseTests(HierarchicalConfiguration config) {

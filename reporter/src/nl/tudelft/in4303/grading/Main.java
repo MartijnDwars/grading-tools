@@ -11,7 +11,7 @@ import com.beust.jcommander.JCommander;
 
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
 		CLOptions options = new CLOptions();
 		new JCommander(options, args);
