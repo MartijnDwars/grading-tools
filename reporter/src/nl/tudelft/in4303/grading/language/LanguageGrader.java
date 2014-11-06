@@ -1,9 +1,7 @@
 package nl.tudelft.in4303.grading.language;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.List;
 
 import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.IResult;
@@ -119,8 +117,9 @@ public class LanguageGrader extends Grader {
 			String desc   = suiteConf.getString("[@description]");
 			int    passed = listener.getPassed(spt);
 			int    missed = listener.getMissed(spt);
-	
-			result.finishedSuite(passed, missed, desc, points);
+			List<String> descriptions = listener.getDescriptions(spt);
+			
+			result.finishedSuite(passed, missed, descriptions, desc, points);
 		}
 		
 		for (Object group : config.configurationsAt("group"))

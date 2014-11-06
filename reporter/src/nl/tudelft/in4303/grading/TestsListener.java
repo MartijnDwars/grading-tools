@@ -1,8 +1,10 @@
 package nl.tudelft.in4303.grading;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +21,7 @@ public class TestsListener implements ITestReporter {
 
 	private final Hashtable<String, Integer> passed = new Hashtable<>();
 	private final Hashtable<String, Integer> missed = new Hashtable<>();
+	private final Hashtable<String, List<String>> descriptions = new Hashtable<>();
 	
 	private boolean active = false;
 	private boolean detected = false;
@@ -32,6 +35,7 @@ public class TestsListener implements ITestReporter {
 	public void addTestsuite(String name, String filename) throws Exception {
 		passed.put(filename, 0);
 		missed.put(filename, 0);
+		descriptions.put(filename, new ArrayList<String>());
 //		if (active && detected) throw new RuntimeException();
 	}
 
@@ -55,9 +59,10 @@ public class TestsListener implements ITestReporter {
 				
 		if (succeeded)
 			passed.put(testsuiteFile, passed.get(testsuiteFile) + 1);
-		else
+		else {
 			missed.put(testsuiteFile, missed.get(testsuiteFile) + 1);
-		
+			descriptions.get(testsuiteFile).add(description);
+		}
 		final String key = testsuiteFile + " " + description;
 		
 		if (init) {
@@ -124,5 +129,9 @@ public class TestsListener implements ITestReporter {
 
 	public int getMissed(String spt) {
 		return missed.get(spt);
+	}
+	
+	public List<String> getDescriptions(String spt) {
+		return descriptions.get(spt);
 	}
 }

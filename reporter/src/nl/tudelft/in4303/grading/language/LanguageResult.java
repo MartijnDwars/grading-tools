@@ -1,6 +1,7 @@
 package nl.tudelft.in4303.grading.language;
 
 import java.io.PrintStream;
+import java.util.List;
 
 import nl.tudelft.in4303.grading.GroupResult;
 import nl.tudelft.in4303.grading.TestsListener;
@@ -87,14 +88,13 @@ public class LanguageResult extends GroupResult {
 			stream.println("You pass less tests than you fail.");
 	}
 
-	public void finishedSuite(int passed, int missed, String description, double points) {
+	public void finishedSuite(int passed, int missed, List<String> descriptions, String description, double points) {
 			
 			this.total  += points;
 			this.points += points * passed / (passed + missed);
 			this.passed += passed;
 			this.missed += missed;
-
-			logger.debug("{} ({} points), detected {}, missed {}");
+			this.missedDescr.addAll(descriptions);
 	}
 	
 }
