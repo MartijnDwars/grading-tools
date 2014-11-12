@@ -1,3 +1,5 @@
-target
-META-INF
-gh.properties
+/target
+/META-INF
+/gh.properties
+/.cache
+/in4303-*
