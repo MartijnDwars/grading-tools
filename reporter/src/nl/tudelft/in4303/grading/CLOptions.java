@@ -18,7 +18,7 @@ public class CLOptions {
 	private boolean runDry = false;
 	
 	@Parameter(names={"-l", "-late"}, description="number of late days")
-	private int late = 0;
+	private int late = -1;
 
 	public String getBranch() {
 		return parameters.get(0);
