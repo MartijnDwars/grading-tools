@@ -161,7 +161,10 @@ public class GitHubService {
 		return false;
 	}
 	public MergeStatus merge(Repository repo, int number, String string) throws IOException {
-		return pullRequestService.merge(repo, number, string);
+		if (dryrun)
+			return null;
+		else
+			return pullRequestService.merge(repo, number, string);
 	}
 
 	public boolean isMerged(Repository repo, PullRequest request) throws IOException {
