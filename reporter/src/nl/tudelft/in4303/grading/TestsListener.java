@@ -57,9 +57,9 @@ public class TestsListener implements ITestReporter {
 		if (!active)
 			return;
 				
-		if (succeeded)
+		if (succeeded) {
 			passed.put(testsuiteFile, passed.get(testsuiteFile) + 1);
-		else {
+		} else {
 			missed.put(testsuiteFile, missed.get(testsuiteFile) + 1);
 			descriptions.get(testsuiteFile).add(description);
 		}
@@ -74,9 +74,9 @@ public class TestsListener implements ITestReporter {
 				logger.debug("invalid test {} in suite {}", description, testsuiteFile);
 			}
 		} else { 
-			if (succeeded) 
+			if (succeeded) {
 				logger.trace("ineffective test {} in suite {}", description, testsuiteFile);
-			else if (valid.contains(key) && !invalid.contains(key)) {
+			} else if (valid.contains(key) && !invalid.contains(key)) {
 				ineffective.remove(key);
 				effective.add(key);
 				detected = true;
