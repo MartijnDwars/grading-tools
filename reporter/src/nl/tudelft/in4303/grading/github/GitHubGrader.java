@@ -92,7 +92,7 @@ public class GitHubGrader {
 			for (PullRequest request : requests) {
 			
 				if (!assignment.equals(request.getBase().getRef())) {
-					git.addComment(request, NO_GRADER);
+//					git.addComment(request, NO_GRADER);
 					continue;
 				} 
 				
