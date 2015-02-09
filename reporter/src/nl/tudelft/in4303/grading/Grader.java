@@ -6,15 +6,14 @@ import java.util.Iterator;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.metaborg.spoofax.testrunner.core.TestRunner;
 import org.metaborg.spt.listener.ITestReporter;
 import org.metaborg.spt.listener.TestReporterProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Grader {
-
-	protected static final Logger logger = LogManager.getLogger();
+	protected static final Logger logger = LoggerFactory.getLogger(Grader.class);
 	protected final XMLConfiguration config;
 	protected final File project;
 	protected final TestsListener listener;
@@ -28,7 +27,7 @@ public abstract class Grader {
 			this.config = xmlConfiguration;
 			this.project = this.config.getFile().getParentFile();
 		} catch (ConfigurationException e) {
-			logger.fatal("configuration", e);
+			logger.error("configuration", e);
 			throw new RuntimeException(e);
 		}
 

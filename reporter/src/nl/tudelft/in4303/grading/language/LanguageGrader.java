@@ -11,7 +11,6 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.metaborg.spoofax.testrunner.core.TestRunner;
 
 public class LanguageGrader extends Grader {
-
 	public LanguageGrader() {
 		super("tests.xml");
 	}
@@ -72,7 +71,7 @@ public class LanguageGrader extends Grader {
 			return result;
 
 		} catch (final ConfigurationException e) {
-			logger.fatal("SPT configuration", e);
+			logger.error("SPT configuration", e);
 			throw new RuntimeException(e);
 		}
 //		} catch (final Exception e) {

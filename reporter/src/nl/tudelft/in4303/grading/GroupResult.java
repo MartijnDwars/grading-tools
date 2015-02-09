@@ -7,12 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class GroupResult implements IResult {
-
-	protected static final Logger logger = LogManager.getLogger();
+	protected static final Logger logger = LoggerFactory.getLogger(GroupResult.class);
 	protected final String name;
 	protected Status status = null;
 	protected double total = 0;

@@ -6,13 +6,12 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.metaborg.spt.listener.ITestReporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestsListener implements ITestReporter {
-	
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LoggerFactory.getLogger(TestsListener.class);
 	
 	private final HashSet<String> valid       = new HashSet<String>(500);
 	private final HashSet<String> invalid     = new HashSet<String>(500);

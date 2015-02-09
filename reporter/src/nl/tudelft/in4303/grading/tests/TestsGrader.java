@@ -71,7 +71,7 @@ public class TestsGrader extends Grader {
 			result.succeed();
 			
 		} catch (Exception e) {
-			logger.fatal("language", e);
+			logger.error("language", e);
 		}
 		
 		return result;
@@ -89,7 +89,7 @@ public class TestsGrader extends Grader {
 			result.succeed();
 
 		} catch (Exception e) {
-			logger.fatal("group", e);
+			logger.error("group", e);
 		}
 		return result;
 	}

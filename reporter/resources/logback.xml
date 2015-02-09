@@ -1,0 +1,21 @@
+<configuration>
+  <appender
+    name="stdout"
+    class="ch.qos.logback.core.ConsoleAppender"
+  >
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger
+    name="nl.tudelft.in4303.grading"
+    level="debug"
+    additivity="false"
+  >
+    <appender-ref ref="stdout" />
+  </logger>
+  <root level="warn">
+    <appender-ref ref="stdout" />
+  </root>
+</configuration>
