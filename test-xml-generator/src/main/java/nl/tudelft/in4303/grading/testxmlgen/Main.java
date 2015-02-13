@@ -2,7 +2,6 @@ package nl.tudelft.in4303.grading.testxmlgen;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Map.Entry;
 
 import org.metaborg.spoofax.testrunner.core.TestRunner;
@@ -29,20 +28,13 @@ public class Main {
         runner.registerLanguage(languageDirectory);
         runner.run();
 
-        for(Entry<String, Collection<String>> entry : TestsListener.fileToTestcases.asMap().entrySet()) {
+        for(Entry<String, String> entry : TestsListener.fileToName.entrySet()) {
             final String suiteFile = entry.getKey();
+            final String suiteName = entry.getValue();
             final Path suitePath = Paths.get(suiteFile);
             final String suiteRelativeFile = testsDirectoryPath.relativize(suitePath).toString();
-            final String suiteName = TestsListener.fileToName.get(suiteFile);
-            final Collection<String> names = entry.getValue();
 
-            sb.append("<group name=\"" + capitalizeFirstLetter(suiteName) + "\">");
-            sb.append(nl);
-            for(String name : names) {
-                sb.append("<suite spt=\"" + suiteRelativeFile + "\" description=\"" + name + "\" points=\"1.0\"/>");
-                sb.append(nl);
-            }
-            sb.append("</group>");
+            sb.append("<suite spt=\"" + suiteRelativeFile + "\" description=\"" + suiteName + "\" points=\"1.0\"/>");
             sb.append(nl);
         }
 
@@ -53,11 +45,5 @@ public class Main {
 
         final String output = sb.toString();
         System.out.println(output);
-    }
-
-    private static String capitalizeFirstLetter(String original) {
-        if(original.length() == 0)
-            return original;
-        return original.substring(0, 1).toUpperCase() + original.substring(1);
     }
 }
