@@ -1,0 +1,14 @@
+<configuration>
+  <appender
+    name="stdout"
+    class="ch.qos.logback.core.ConsoleAppender"
+  >
+    <encoder>
+      <pattern>%date{HH:mm} | %-5level | %-30.30logger{20} - %message%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="warn">
+    <appender-ref ref="stdout" />
+  </root>
+</configuration>
