@@ -24,7 +24,7 @@ public class Main {
 			if (ConfigurationUtils.locate("tests.xml") != null)
 				reporter = new LanguageGrader();
 			else
-				reporter = new TestsGrader("MiniJava-tests-names");
+				reporter = new TestsGrader("MiniJava-tests-types");
 		
 			String pattern = "^student-"+ options.getStudent() +"(.*)$";
 			if (options.reportDetails())
