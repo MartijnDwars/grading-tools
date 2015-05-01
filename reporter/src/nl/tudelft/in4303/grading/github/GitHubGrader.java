@@ -37,20 +37,16 @@ public class GitHubGrader {
 
 	private final GitHubService git;
 
-	public GitHubGrader(boolean runDry) throws ConfigurationException {
-		this("gh.properties", runDry);
-	}
-	
-	public GitHubGrader(String config, boolean runDry) throws ConfigurationException {
-		this(new PropertiesConfiguration(config), runDry);
+	public static GitHubGrader fromConfig(String config, boolean runDry) throws ConfigurationException {
+		return new GitHubGrader(new PropertiesConfiguration(config), runDry);
 	}
 	
 	public GitHubGrader(AbstractConfiguration config, boolean runDry) {
-		this(config.getString("user"), config.getString("user2"), runDry);
+		this(config.getString("token"), runDry);
 	}
-	
-	public GitHubGrader(String username, String password, boolean runDry) {
-		git = new GitHubService(username, password);	
+
+	public GitHubGrader(String token, boolean runDry) {
+		git = new GitHubService(token);
 		git.runDry(runDry);
 	}
 
@@ -136,8 +132,7 @@ public class GitHubGrader {
 		}
 	}
 
-	private IResult grade(Grader grader, Repository repo, String sha, RefSpec ref) throws Exception {	
-
+	private IResult grade(Grader grader, Repository repo, String sha, RefSpec ref) throws Exception {
 		ExtendedCommitStatus cstatus = new ExtendedCommitStatus();
 		cstatus.setState("pending");
 		cstatus.setDescription("The assignment is being graded.");

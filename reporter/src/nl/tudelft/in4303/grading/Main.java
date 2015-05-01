@@ -15,23 +15,23 @@ public class Main {
 
 		CLOptions options = new CLOptions();
 		new JCommander(options, args);
-		
+
 		try {
-			GitHubGrader grader = new GitHubGrader(options.runDry());
-			
+			GitHubGrader grader = GitHubGrader.fromConfig("gh.properties", options.runDry());
+
 			Grader reporter;
 
 			if (ConfigurationUtils.locate("tests.xml") != null)
 				reporter = new LanguageGrader();
 			else
-				reporter = new TestsGrader("MiniJava-tests-types");
-		
+				reporter = new TestsGrader("MiniJava-tests");
+
 			String pattern = "^student-"+ options.getStudent() +"(.*)$";
 			if (options.reportDetails())
 				grader.grade(reporter, options.getBranch(), pattern);
 			else
 				grader.feedback(reporter, options.getBranch(), pattern, options.getLate());
-			
+
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
 		}
