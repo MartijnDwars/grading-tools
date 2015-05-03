@@ -9,7 +9,7 @@ public class CLOptions {
     @Parameter(description = "branch, student and solution to grade against")
     private List<String> parameters = new ArrayList<>();
 
-    @Parameter(names = {"-d", "--details", "-g", "--grade"}, description = "generate detailed report")
+    @Parameter(names = {"-g", "--grade"}, description = "generate detailed report")
     private boolean details = false;
 
     @Parameter(names = {"-t", "--test"}, description = "do not send comments to github")
