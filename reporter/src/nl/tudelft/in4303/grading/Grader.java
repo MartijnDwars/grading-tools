@@ -18,7 +18,7 @@ public abstract class Grader {
 	protected final File project;
 	protected final TestsListener listener;
 
-	public Grader(String config) {
+	public Grader(File config) {
 		try {
 			XMLConfiguration xmlConfiguration = new XMLConfiguration();
 			xmlConfiguration.setDelimiterParsingDisabled(true);

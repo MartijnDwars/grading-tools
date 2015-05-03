@@ -11,8 +11,8 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.metaborg.spoofax.testrunner.core.TestRunner;
 
 public class LanguageGrader extends Grader {
-	public LanguageGrader() {
-		super("tests.xml");
+	public LanguageGrader(String solution) {
+		super(new File(solution, "/tests.xml"));
 	}
 
 	@Override
