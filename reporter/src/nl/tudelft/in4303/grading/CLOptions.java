@@ -12,7 +12,7 @@ public class CLOptions {
     @Parameter(names = {"-g", "--grade"}, description = "generate detailed report")
     private boolean details = false;
 
-    @Parameter(names = {"-t", "--test"}, description = "do not send comments to github")
+    @Parameter(names = {"-d", "--dryrun"}, description = "do not send comments to github")
     private boolean runDry = false;
 
     @Parameter(names = {"-l", "--late"}, description = "number of late days")
