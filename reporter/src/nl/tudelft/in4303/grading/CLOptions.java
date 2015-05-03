@@ -9,13 +9,13 @@ public class CLOptions {
     @Parameter(description = "branch, student and solution to grade against")
     private List<String> parameters = new ArrayList<>();
 
-    @Parameter(names = {"-d", "-details", "-g", "-grade"}, description = "generate detailed report")
+    @Parameter(names = {"-d", "--details", "-g", "--grade"}, description = "generate detailed report")
     private boolean details = false;
 
-    @Parameter(names = {"-t", "-test"}, description = "do not send comments to github")
+    @Parameter(names = {"-t", "--test"}, description = "do not send comments to github")
     private boolean runDry = false;
 
-    @Parameter(names = {"-l", "-late"}, description = "number of late days")
+    @Parameter(names = {"-l", "--late"}, description = "number of late days")
     private int late = -1;
 
     public String getBranch() {
