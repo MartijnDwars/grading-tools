@@ -10,6 +10,9 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.metaborg.spoofax.testrunner.core.TestRunner;
 
+/**
+ * A grader that uses tests to grade a student's language
+ */
 public class LanguageGrader extends Grader {
 	public LanguageGrader(String solution) {
 		super(new File(solution, "/tests.xml"));

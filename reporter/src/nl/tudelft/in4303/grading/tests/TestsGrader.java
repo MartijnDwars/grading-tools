@@ -9,19 +9,26 @@ import org.metaborg.spoofax.testrunner.core.TestRunner;
 
 import java.io.File;
 
+/**
+ * A grader that uses languages to grade a student's tests
+ */
 public class TestsGrader extends Grader {
-    private final String path;
+    private final String testProject;
 
-    public TestsGrader(String solution) {
+    /**
+     * @param solution    Path to the grading (solution) project
+     * @param testProject Path to the submission project (i.e. MiniJava-tests(-names|-types)?)
+     */
+    public TestsGrader(String solution, String testProject) {
         super(new File(solution, "/languages.xml"));
 
-        this.path = solution;
+        this.testProject = testProject;
     }
 
     protected IResult grade(File repo, boolean checkOnly) {
 
         listener.init();
-        TestRunner runner = new TestRunner(new File(repo, path).getAbsolutePath(), "testrunnerfile");
+        TestRunner runner = new TestRunner(new File(repo, testProject).getAbsolutePath(), "testrunnerfile");
 
         logger.info("running reference language implementation");
 

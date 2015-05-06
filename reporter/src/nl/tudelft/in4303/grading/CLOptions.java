@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CLOptions {
-    @Parameter(description = "branch, student and solution to grade against")
+    @Parameter(description = "branch, student, solution, and test project")
     private List<String> parameters = new ArrayList<>();
 
     @Parameter(names = {"-g", "--grade"}, description = "generate detailed report")
@@ -28,6 +28,10 @@ public class CLOptions {
 
     public String getSolution() {
         return parameters.get(2);
+    }
+
+    public String getTestProject() {
+        return parameters.get(3);
     }
 
     public boolean reportDetails() {

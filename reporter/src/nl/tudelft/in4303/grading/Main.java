@@ -22,7 +22,7 @@ public class Main {
             if (ConfigurationUtils.locate(options.getSolution(), "tests.xml") != null) {
                 reporter = new LanguageGrader(options.getSolution());
             } else {
-                reporter = new TestsGrader(options.getSolution());
+                reporter = new TestsGrader(options.getSolution(), options.getTestProject());
             }
 
             String pattern = "^student-" + options.getStudent() + "(.*)$";
