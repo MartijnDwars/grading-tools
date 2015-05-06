@@ -70,7 +70,7 @@ public class GitHubGrader {
 				git.addComment(request, autoComment + report.getGrade());
 				git.setStatus(repo, sha, status);
 			}
-		
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (GitAPIException e) {
@@ -114,8 +114,8 @@ public class GitHubGrader {
 
 				if (report.getStatus() == Status.SUCCESS) {
 					MergeStatus mstatus = git.merge(repo, number, "Merge submission");
-				
-					if (!mstatus.isMerged()) {
+
+					if (mstatus != null && !mstatus.isMerged()) {
 						git.addComment(request, NO_MERGE);
 					} else if (late > 0) {
 						git.addComment(request, autoComment + "This submission costs you " + late + " late days.");
