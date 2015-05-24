@@ -141,6 +141,7 @@ public class GitHubGrader {
 
 		File dir = createTemporaryDirectory();
 		Git co = git.checkout(repo, ref, dir);
+		logger.info("Checkout student project in " + dir);
 		
 		IResult report = grader.grade(dir);
 		
