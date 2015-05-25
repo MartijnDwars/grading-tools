@@ -151,7 +151,8 @@ public class GitHubGrader {
 	}
 
 	private File createTemporaryDirectory() throws IOException {
-		Path tmpDirPath = Files.createTempDirectory("in4303-");
+		Path currentDir = FileSystems.getDefault().getPath(".");
+		Path tmpDirPath = Files.createTempDirectory(currentDir, "in4303-");
 		final File tmpDir = tmpDirPath.toFile();
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
