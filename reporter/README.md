@@ -13,17 +13,15 @@ Use the following external tools configuration:
 
 To build the grading tools, clone the `grading-releng` repository and run scripts `update.sh` and `build.sh`. This will install the correct dependencies. I imported the `reporter` project in Eclipse and changed the 'Module settings' to overwrite spoofax-core.jar and org.strategoxt.imp.testing (both with the equivalent version from grading-releng).
 
-# Grade from the command-line
+# Usage
 
-In the current directory, create a `gh.properties` file containing the user and password of your github account in the following format:
+In the current directory, create a `gh.properties` file containing the GitHub access token in the following format:
 
 ```
-user=username
-user2=password
+token=<your-token>
 ```
 
-Now, you can run the reporter using Java. You need to put the reporter JAR file, the lab project, and the SPT folder on the classpath, choose the main class, and pass the NetID of the student to grade as argument.
-For example, with the following directory structure:
+Now, you can run the reporter using Java. You need to put the reporter JAR file and the SPT folder on the classpath, choose the main class, and pass the NetID of the student, the path to the grading project and the test dir to grade (usually `MiniJava-tests(-names|-types)?`) as argument. For example, with the following directory structure:
 
 ```
 .
@@ -38,10 +36,24 @@ For example, with the following directory structure:
 run the following command:
 
 ```
-java -classpath "grading-releng/grading-tools/reporter/target/reporter-1.2.0-SNAPSHOT.jar:grading/lab1/:grading-releng/spt/org.strategoxt.imp.testing/" nl.tudelft.in4303.grading.Main johndoe
+java -cp "grading-releng/grading-tools/reporter/target/reporter-1.5.0-SNAPSHOT.jar:grading-releng/spt/org.strategoxt.imp.testing/" nl.tudelft.in4303.grading.Main johndoe grading/lab7 MiniJava-tests-types
 ```
 
 to grade the student `johndoe`.
+
+## Options
+
+The reporter accepts the following options:
+
+```
+-d --dryrun	    Do not post anything to GitHub
+-g --grade      Post detailed grade (by default the student only receives feedback)
+-l --late       Specify a positive number of late days. A comment will be placed to notify the student.
+-b --branch     Branch on GitHub to grade
+-p --project    Path to a local project to grade
+
+Use either --branch or --project.
+```
 
 # Fix erroneous submissions
 
