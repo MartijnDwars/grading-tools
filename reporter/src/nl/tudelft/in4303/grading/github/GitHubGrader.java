@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class GitHubGrader {
 	private static final Logger logger = LoggerFactory.getLogger(GitHubGrader.class);
 	
-	static final String GRADING_ORGANISATION = "TUDelft-IN4303";
+	static final String GRADING_ORGANISATION = "TUDelft-IN4303-2015";
 	static final String GRADING_CONTEXT = "grading/in4303";
 
 	static final String autoComment  = "*Auto-generated comment*" + System.lineSeparator() + System.lineSeparator();
