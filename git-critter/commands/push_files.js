@@ -15,20 +15,12 @@ var PushFilesCommand = module.exports = {
   }
 };
 
-var username_password = [
-  {
-    name: 'username', 
-    validator: /^[a-zA-Z_\-][a-zA-Z_\-0-9]*$/,
-    warning: 'Username contains invalid characters'
-  },
-  {
-    name: 'password',
-    hidden: true
-  }
-];
+var token = [{
+  name: 'token'
+}];
 
 (function() {
-  this.promptCredentials = Q.nfbind(prompt.get, username_password);
+  this.promptCredentials = Q.nfbind(prompt.get, token);
   
   this.getReposFromOrg = function(github, org) {
     return Q.nbind(github.repos.getFromOrg, github.repos)({ org: org })
@@ -61,6 +53,19 @@ var username_password = [
       callback(null, result);
     }
   };
+
+  /**
+   * Connecting over https to a private repo requires you to authenticate. My
+   * credentials were not accepted (perhaps because of 2FA). By connecting
+   * over ssh, git uses your default pair.
+   *
+   * Just make sure the whoever executes this script has write access to the
+   * student repos. E.g. by creating a "Staff" team, adding the TA to that
+   * team, and adding the student repos with write access to that team.
+   */
+  this.httpsToSsh = function (cloneUrl) {
+    return cloneUrl.replace('https://github.com/', 'git@github.com:');
+  };
   
   this.execute = function(options) {
     var organisation = options.organisation;
@@ -77,11 +82,10 @@ var username_password = [
         protocol: "https",
         timeout: 5000
       });
-      
+
       github.authenticate({
-        type: "basic",
-        username: credentials.username,
-        password: credentials.password
+        type: "oauth",
+        token: credentials.token
       });
       
       return self.getReposFromOrg(github, organisation)
@@ -89,7 +93,9 @@ var username_password = [
         .then(function(repos) {
           return repos.reduce(function(sequence, repo) {
             return sequence.then(function(result) {
-              return exec('git remote add ' + repo.name + ' ' + repo.clone_url)
+              var cloneUrl = self.httpsToSsh(repo.clone_url);
+
+              return exec('git remote add ' + repo.name + ' ' + cloneUrl)
                         .catch(function(err) { console.warn(err.message); return null; }) // Ignore errors, may not be a good idea.
                         .then(function() { return result.concat([repo.name]); });
             });
