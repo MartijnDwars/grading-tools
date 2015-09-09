@@ -13,11 +13,19 @@ import java.io.File;
  * A grader that uses languages to grade a student's tests
  */
 public class TestsGrader extends Grader {
+    /**
+     * The location of the test project, e.g MiniJava-tests-syntax
+     */
     private final String testProject;
 
     /**
+     * Directory of the student's repository
+     */
+    private File repo;
+
+    /**
      * @param solution    Path to the grading (solution) project
-     * @param testProject Path to the submission project (i.e. MiniJava-tests(-names|-types)?)
+     * @param testProject Path to the submission project, i.e. MiniJava-tests-(syntax|names|types)
      */
     public TestsGrader(String solution, String testProject) {
         super(new File(solution, "/languages.xml"));
@@ -26,25 +34,25 @@ public class TestsGrader extends Grader {
     }
 
     protected IResult grade(File repo, boolean checkOnly) {
+        this.repo = repo;
 
         listener.init();
-        TestRunner runner = new TestRunner(new File(repo, testProject).getAbsolutePath(), "testrunnerfile");
 
         logger.info("running reference language implementation");
 
-        GroupResult result = runLanguages(runner, config);
+        GroupResult result = runLanguages(config);
 
         if (!checkOnly && !result.hasErrors()) {
 
             logger.info("running erroneous language implementations");
-            result.finishedGroup(runTests(runner, config.configurationAt("group")));
+            result.finishedGroup(runTests(config.configurationAt("group")));
         }
 
         listener.exit();
         return result;
     }
 
-    private GroupResult runLanguages(TestRunner runner, HierarchicalConfiguration config) {
+    private GroupResult runLanguages(HierarchicalConfiguration config) {
 
         final String name = config.getString("[@name]", "");
 
@@ -61,8 +69,11 @@ public class TestsGrader extends Grader {
                 final String description = langConf.getString("[@description]");
                 final double points = langConf.getDouble("[@points]", 0);
 
+                // Create a new runner for every language to make sure nothing is left behind (see #1)
+                TestRunner runner = new TestRunner(new File(repo, testProject).getAbsolutePath(), "testrunnerfile");
                 runner.registerSPT();
                 runner.registerLanguage(new File(project, esvPath).getParentFile().getAbsolutePath());
+
                 logger.debug("running {}", esvPath);
 
                 runTests(runner, result);
@@ -79,14 +90,14 @@ public class TestsGrader extends Grader {
         return result;
     }
 
-    private GroupResult runTests(TestRunner runner, HierarchicalConfiguration config) {
+    private GroupResult runTests(HierarchicalConfiguration config) {
 
-        GroupResult result = runLanguages(runner, config);
+        GroupResult result = runLanguages(config);
 
         try {
 
             for (Object group : config.configurationsAt("group"))
-                result.finishedGroup(runTests(runner, (HierarchicalConfiguration) group));
+                result.finishedGroup(runTests((HierarchicalConfiguration) group));
 
             result.succeed();
 

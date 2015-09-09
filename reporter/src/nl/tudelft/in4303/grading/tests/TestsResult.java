@@ -14,7 +14,6 @@ public class TestsResult extends GroupResult {
 	}
 	
 	public void finishedLanguage(boolean detected, String description, double points) {
-		
 		this.total += points;
 		if (detected) {
 			this.points += points;
