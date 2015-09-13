@@ -1,11 +1,16 @@
 package nl.tudelft.in4303.grading.tests;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import nl.tudelft.in4303.grading.Grader;
 import nl.tudelft.in4303.grading.GroupResult;
 import nl.tudelft.in4303.grading.IResult;
+import nl.tudelft.in4303.grading.TestRunner;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.metaborg.spoofax.testrunner.core.TestRunner;
+import org.metaborg.spoofax.core.SpoofaxModule;
+import org.metaborg.sunshine.environment.ServiceRegistry;
+//import org.metaborg.spoofax.testrunner.core.TestRunner;
 
 import java.io.File;
 
@@ -85,14 +90,22 @@ public class TestsGrader extends Grader {
                 final String description = langConf.getString("[@description]");
                 final double points = langConf.getDouble("[@points]", 0);
 
+                Injector injector = Guice.createInjector(new NewSpoofaxModule());
+                ServiceRegistry.INSTANCE().setInjector(injector);
+
+                TestRunner testRunner = injector.getInstance(TestRunner.class);
+                testRunner.registerSPT();
+                testRunner.registerLanguage(new File(project, esvPath).getParentFile());
+
                 // Create a new runner for every language to make sure nothing is left behind (see #1)
-                TestRunner runner = new TestRunner(new File(repo, testProject).getAbsolutePath(), "testrunnerfile");
-                runner.registerSPT();
-                runner.registerLanguage(new File(project, esvPath).getParentFile().getAbsolutePath());
+//                TestRunner runner = new TestRunner(new File(repo, testProject).getAbsolutePath(), /*"testrunnerfile"*/"Run testsuites");
+//                runner.registerSPT();
+//                runner.registerLanguage(new File(project, esvPath).getParentFile().getAbsolutePath());
 
                 logger.debug("running {}", esvPath);
 
-                runTests(runner, result);
+                testRunner.runTests(new File(repo, testProject));
+//                runTests(runner, result);
 
                 result.finishedLanguage(listener.newLanguage(), description, points);
             }

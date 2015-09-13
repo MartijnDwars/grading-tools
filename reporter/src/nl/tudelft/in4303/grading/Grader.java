@@ -44,12 +44,12 @@ public abstract class Grader {
 	}
 
 	public IResult check(File repo) throws Exception {
-	
+
 		return grade(repo, true);
 	}
 
 	public IResult grade(File repo) throws Exception {
-	
+
 		return grade(repo, false);
 	}
 

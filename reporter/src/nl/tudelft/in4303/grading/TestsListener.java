@@ -49,6 +49,7 @@ public class TestsListener implements ITestReporter {
             return false;
         }
 
+        // TODO: These counts may not be correct if we short-circuit testing. Where are they used? Check this!
         if (succeeded) {
             passed.put(testsuiteFile, passed.get(testsuiteFile) + 1);
         } else {
@@ -75,10 +76,12 @@ public class TestsListener implements ITestReporter {
                 detected = true;
                 logger.debug("effective test {} in suite {}", description, testsuiteFile);
 
+                // Abort running any further tests
                 return false;
             }
         }
 
+        // Continue running tests
         return true;
     }
 
