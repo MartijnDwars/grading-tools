@@ -38,6 +38,8 @@ public class TestsGrader extends Grader {
 
         listener.init();
 
+        logger.info(".LANGUAGES " + countLanguages(config));
+
         logger.info("running reference language implementation");
 
         GroupResult result = runLanguages(config);
@@ -49,11 +51,27 @@ public class TestsGrader extends Grader {
         }
 
         listener.exit();
+
         return result;
     }
 
-    private GroupResult runLanguages(HierarchicalConfiguration config) {
+    /**
+     * Count all languages starting at the given node
+     *
+     * @param config
+     * @return
+     */
+    private int countLanguages(HierarchicalConfiguration config) {
+        int i = config.configurationsAt("language").size();
 
+        for (Object group : config.configurationsAt("group")) {
+            i += countLanguages((HierarchicalConfiguration) group);
+        }
+
+        return i;
+    }
+
+    private GroupResult runLanguages(HierarchicalConfiguration config) {
         final String name = config.getString("[@name]", "");
 
         logger.debug("group {}", name);
@@ -61,9 +79,7 @@ public class TestsGrader extends Grader {
         TestsResult result = new TestsResult(name, listener);
 
         try {
-
             for (Object current : config.configurationsAt("language")) {
-
                 final Configuration langConf = (Configuration) current;
                 final String esvPath = langConf.getString("[@esv]");
                 final String description = langConf.getString("[@description]");
@@ -91,19 +107,18 @@ public class TestsGrader extends Grader {
     }
 
     private GroupResult runTests(HierarchicalConfiguration config) {
-
         GroupResult result = runLanguages(config);
 
         try {
-
-            for (Object group : config.configurationsAt("group"))
+            for (Object group : config.configurationsAt("group")) {
                 result.finishedGroup(runTests((HierarchicalConfiguration) group));
+            }
 
             result.succeed();
-
         } catch (Exception e) {
             logger.error("group", e);
         }
+
         return result;
     }
 }

@@ -11,7 +11,7 @@ Use the following external tools configuration:
 
 # Build grading tool
 
-To build the grading tools, clone the `grading-releng` repository and run scripts `update.sh` and `build.sh`.
+To build the grading tools, clone the `grading-releng` repository and run scripts `update.sh` and `build.sh`. This will install the correct dependencies. I imported the `reporter` project in Eclipse and changed the 'Module settings' to overwrite spoofax-core.jar and org.strategoxt.imp.testing (both with the equivalent version from grading-releng).
 
 # Grade from the command-line
 
