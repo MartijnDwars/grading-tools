@@ -24,6 +24,7 @@ public abstract class GroupResult implements IResult {
 	protected final TestsListener listener;
 
 	protected final DecimalFormat df = new DecimalFormat("#0.0#");
+	protected final DecimalFormat dfGrade = new DecimalFormat("0.00");
 	
 	public GroupResult(String name, TestsListener listener) {
 		this.name = name;

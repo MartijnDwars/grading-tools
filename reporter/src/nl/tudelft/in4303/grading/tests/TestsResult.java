@@ -37,11 +37,12 @@ public class TestsResult extends GroupResult {
 		switch (status) {
 		case SUCCESS:
 			
-			stream.print("You score " + points + " out of " + total + " points. ");
+			stream.print("You score " + df.format(points) + " out of " + total + " points. ");
 			stream.print("You have " + listener.getValid() + " valid tests. ");
-			stream.print(listener.getEffective() + " of your valid tests detect " + passed + " erroneous language definitions.");
+			stream.print(listener.getEffective() + " of your valid tests detect " + passed + " erroneous language definitions. ");
+			stream.print("Your automated grade is " + dfGrade.format(points/total*10) + ".");
 			break;
-	
+
 		case ERROR:
 			
 			stream.print("Your tests caused " + errors.size() + " errors.");

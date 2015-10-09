@@ -23,8 +23,9 @@ public class LanguageResult extends GroupResult {
 		switch (status) {
 		case SUCCESS:
 			
-			stream.print("You score " + df.format(points) + " points out of " + total + " points. ");
+			stream.print("You score " + df.format(points) + " out of " + total + " points. ");
 			stream.print("You pass " + passed + " tests. ");
+			stream.print("Your automated grade is " + dfGrade.format(points/total*10) + ".");
 			break;
 	
 		case ERROR:
