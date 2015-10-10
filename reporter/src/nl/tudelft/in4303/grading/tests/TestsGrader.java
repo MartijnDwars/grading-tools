@@ -14,23 +14,15 @@ import java.io.File;
  */
 public class TestsGrader extends Grader {
     /**
-     * The location of the test project, e.g MiniJava-tests-syntax
-     */
-    private final String testProject;
-
-    /**
      * Directory of the student's repository
      */
     private File repo;
 
     /**
      * @param solution    Path to the grading (solution) project
-     * @param testProject Path to the submission project, i.e. MiniJava-tests-(syntax|names|types)
      */
-    public TestsGrader(String solution, String testProject) {
+    public TestsGrader(String solution) {
         super(new File(solution, "/languages.xml"));
-
-        this.testProject = testProject;
     }
 
     protected IResult grade(File repo, boolean checkOnly) {
@@ -86,7 +78,7 @@ public class TestsGrader extends Grader {
                 final double points = langConf.getDouble("[@points]", 0);
 
                 // Create a new runner for every language to make sure nothing is left behind (see #1)
-                TestRunner runner = new TestRunner(new File(repo, testProject).getAbsolutePath(), "testrunnerfile");
+                TestRunner runner = new TestRunner(repo.getAbsolutePath(), "testrunnerfile");
                 runner.registerSPT();
                 runner.registerLanguage(new File(project, esvPath).getParentFile().getAbsolutePath());
 
@@ -98,7 +90,6 @@ public class TestsGrader extends Grader {
             }
 
             result.succeed();
-
         } catch (Exception e) {
             logger.error("language", e);
         }

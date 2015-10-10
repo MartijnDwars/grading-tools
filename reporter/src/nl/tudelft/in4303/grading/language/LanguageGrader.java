@@ -20,11 +20,9 @@ public class LanguageGrader extends Grader {
 
 	@Override
 	protected IResult grade(File repo, boolean checkOnly) throws Exception {
-		
 		listener.init();
-		
-		File lang = new File(repo, "MiniJava");
-		File include = new File(lang, "include");
+
+		File include = new File(repo, "include");
 		File esv = new File(include, "MiniJava.packed.esv");
 		
 		if (!esv.exists()) {

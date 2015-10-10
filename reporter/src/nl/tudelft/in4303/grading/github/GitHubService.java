@@ -126,7 +126,8 @@ public class GitHubService {
 				tmpRepo.fetch()
 						.setCredentialsProvider(credentialsProvider)
 						.setRemote(repo.getCloneUrl())
-						.setRefSpecs(refSpec).call();
+						.setRefSpecs(refSpec)
+						.call();
 
 				// git checkout the fetched head
 				tmpRepo.checkout().setAllPaths(true).setStartPoint("FETCH_HEAD")

@@ -26,12 +26,10 @@ import org.slf4j.LoggerFactory;
 
 public class GitHubGrader {
 	private static final Logger logger = LoggerFactory.getLogger(GitHubGrader.class);
-	
-	static final String GRADING_ORGANISATION = "TUDelft-IN4303-2015";
+
 	static final String GRADING_CONTEXT = "grading/in4303";
 
 	static final String autoComment  = "*Auto-generated comment*" + System.lineSeparator() + System.lineSeparator();
-	
 	static final String NO_MERGE  = autoComment + "Make sure your branch can be merged into the branch of the assignment.";
 	static final String NO_GRADER = autoComment + "You need to create pull requests against the branch of the assignment you want to submit.";
 
@@ -50,19 +48,17 @@ public class GitHubGrader {
 		git.runDry(runDry);
 	}
 
-	public void grade(Grader grader, String assignment, String pattern) throws Exception {
-	
+	public void grade(Grader grader, String project, String assignment, String pattern, String organisation) throws Exception {
 		try {
-			Collection<PullRequest> requests = git.getLatestPullRequests(GRADING_ORGANISATION, pattern, assignment, "closed");
+			Collection<PullRequest> requests = git.getLatestPullRequests(organisation, pattern, assignment, "closed");
 
 			for (PullRequest request : requests) {
-	
 				Repository repo = request.getBase().getRepo();
-				String sha      = request.getHead().getSha();
+				String sha = request.getHead().getSha();
 				
 				logger.info("grading pull request {}#{}", repo.getName(), request.getNumber());
 				
-				IResult report = grade(grader, repo, sha, new RefSpec("refs/heads/" + assignment));
+				IResult report = grade(grader, repo, project, sha, new RefSpec("refs/heads/" + assignment));
 				
 				ExtendedCommitStatus status = new ExtendedCommitStatus(report);
 				status.setContext(GRADING_CONTEXT);
@@ -70,22 +66,17 @@ public class GitHubGrader {
 				git.addComment(request, autoComment + report.getGrade());
 				git.setStatus(repo, sha, status);
 			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (GitAPIException e) {
+		} catch (IOException | GitAPIException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
-	public void feedback(Grader grader, String assignment, String pattern, int late) throws Exception {
-
+	public void feedback(Grader grader, String project, String assignment, String pattern, String organisation, int late) throws Exception {
 		try {
-			Collection<PullRequest> requests = git.getPullRequests(GRADING_ORGANISATION, pattern, "open");
+			Collection<PullRequest> requests = git.getPullRequests(organisation, pattern, "open");
 			
 			for (PullRequest request : requests) {
-			
+
 				if (!assignment.equals(request.getBase().getRef())) {
 //					git.addComment(request, NO_GRADER);
 					continue;
@@ -95,7 +86,7 @@ public class GitHubGrader {
 				int number      = request.getNumber();
 				String sha      = request.getHead().getSha();
 				
-				IResult report = grade(grader, repo, sha, new RefSpec("refs/pull/" + number + "/merge"));
+				IResult report = grade(grader, repo, project, sha, new RefSpec("refs/pull/" + number + "/merge"));
 				
 				ExtendedCommitStatus status = new ExtendedCommitStatus(report);
 				status.setContext(GRADING_CONTEXT);
@@ -132,7 +123,7 @@ public class GitHubGrader {
 		}
 	}
 
-	private IResult grade(Grader grader, Repository repo, String sha, RefSpec ref) throws Exception {
+	private IResult grade(Grader grader, Repository repo, String project, String sha, RefSpec ref) throws Exception {
 		ExtendedCommitStatus cstatus = new ExtendedCommitStatus();
 		cstatus.setState("pending");
 		cstatus.setDescription("The assignment is being graded.");
@@ -143,7 +134,7 @@ public class GitHubGrader {
 		Git co = git.checkout(repo, ref, dir);
 		logger.info("Checkout student project in " + dir);
 		
-		IResult report = grader.grade(dir);
+		IResult report = grader.grade(new File(dir, project));
 		
 		co.close();
 		
@@ -166,5 +157,4 @@ public class GitHubGrader {
 		}));
 		return tmpDir;
 	}
-
 }
