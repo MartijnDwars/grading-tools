@@ -80,7 +80,7 @@ public class Reporter {
         if (commandRemote.isGrade()) {
             grader.grade(reporter, commandRemote.getProject(), commandRemote.getBranch(), commandRemote.getRepository(), commandRemote.getOrganisation());
         } else {
-            grader.feedback(reporter, commandRemote.getProject(), commandRemote.getBranch(), commandRemote.getRepository(), commandRemote.getOrganisation(), 0);
+            grader.feedback(reporter, commandRemote.getProject(), commandRemote.getBranch(), commandRemote.getRepository(), commandRemote.getOrganisation(), -1);
         }
     }
 }
