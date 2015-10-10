@@ -76,9 +76,7 @@ public class GitHubGrader {
 			Collection<PullRequest> requests = git.getPullRequests(organisation, pattern, "open");
 			
 			for (PullRequest request : requests) {
-
 				if (!assignment.equals(request.getBase().getRef())) {
-//					git.addComment(request, NO_GRADER);
 					continue;
 				} 
 				
@@ -94,9 +92,9 @@ public class GitHubGrader {
 				if (late == -1) {
 					git.addComment(request, autoComment + report.getFeedback());
 				} else {
-					
-					if (report.getStatus() == Status.SUCCESS)
+					if (report.getStatus() == Status.SUCCESS) {
 						status.setDescription("Successful submission without feedback.");
+					}
 					
 					System.out.println(report.getFeedback());
 				}
@@ -115,7 +113,6 @@ public class GitHubGrader {
 					git.close(request);
 				}
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (GitAPIException e) {

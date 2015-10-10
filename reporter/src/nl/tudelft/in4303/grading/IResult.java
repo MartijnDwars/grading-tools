@@ -9,6 +9,11 @@ public interface IResult {
 	
 	public abstract Status getStatus();
 
+	/**
+	 * Get status description (maxium is 140 characters)
+	 *
+	 * @return
+	 */
 	public abstract String getStatusDescription();
 	
 	public abstract String getFeedback();

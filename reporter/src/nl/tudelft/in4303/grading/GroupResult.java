@@ -38,8 +38,9 @@ public abstract class GroupResult implements IResult {
 	}
 
 	public void succeed() {
-		if (status == null)
+		if (status == null) {
 			status = Status.SUCCESS;
+		}
 	}
 
 	public void error(String e) {
@@ -52,7 +53,6 @@ public abstract class GroupResult implements IResult {
 	}
 
 	public void finishedGroup(GroupResult result) {
-
 		results.add(result);
 		errors.addAll(result.errors);
 		
@@ -67,40 +67,35 @@ public abstract class GroupResult implements IResult {
 		return getReport(true);
 	}
 
-
 	@Override
 	public String getFeedback() {
 		return getReport(false);
 	}
-
 	
 	private String getReport(boolean details) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PrintStream stream = new PrintStream(output);
 		
 		switch (status) {
-		case SUCCESS:
-			
-			report("# ", stream, details);
-			if (!details) {
-				stream.println();
-				stream.println("## Summary");
-				stream.println();
-				stream.println(getStatusDescription());
-			}
-			
-		case ERROR:
-
-			for (String error : errors) {
-				stream.println("```");
-				stream.println(error);
-				stream.println("```");
-				stream.println();
-			}
-			break;
-			
-		case FAILURE:
-			break;
+			case SUCCESS:
+				report("# ", stream, details);
+				if (!details) {
+					stream.println();
+					stream.println("## Summary");
+					stream.println();
+					stream.println(getStatusDescription());
+				}
+				break;
+			case ERROR:
+				for (String error : errors) {
+					stream.println("```");
+					stream.println(error);
+					stream.println("```");
+					stream.println();
+				}
+				break;
+			case FAILURE:
+				break;
 		}
 		
 		stream.close();
@@ -108,25 +103,28 @@ public abstract class GroupResult implements IResult {
 	}
 
 	private void report(String header, PrintStream stream, boolean details) {
-	
-		if (details)
+		if (details) {
 			stream.println(header + name + " (" + df.format(points) + " out of " + df.format(total) + " points)");
-		else
+		} else {
 			stream.println(header + name);
+		}
 
 		stream.println();
 		
 		report(stream, details);
 		stream.println();
 		
-		if (passed == 0 || missed == 0)
+		if (passed == 0 || missed == 0) {
 			return;
+		}
 		
-		for (GroupResult group : results)
-			if (details)
+		for (GroupResult group : results) {
+			if (details) {
 				group.report("#" + header, stream, details);
-			else
+			} else {
 				group.report("#" + header, stream, details);
+			}
+		}
 	}
 
 	abstract protected void report(PrintStream stream, boolean details);
