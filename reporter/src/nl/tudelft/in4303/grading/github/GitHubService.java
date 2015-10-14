@@ -78,7 +78,7 @@ public class GitHubService {
 		return requests;
 	}
 
-	protected Collection<PullRequest> getPullRequests(String org, String pattern, String branch, String state) throws IOException {
+	public Collection<PullRequest> getPullRequests(String org, String pattern, String branch, String state) throws IOException {
 
 		List<Repository> orgRepositories = repoService.getOrgRepositories(org);
 

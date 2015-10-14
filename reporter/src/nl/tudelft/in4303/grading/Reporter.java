@@ -3,23 +3,32 @@ package nl.tudelft.in4303.grading;
 import com.beust.jcommander.JCommander;
 import nl.tudelft.in4303.grading.commands.AbstractCommand;
 import nl.tudelft.in4303.grading.commands.CommandLocal;
+import nl.tudelft.in4303.grading.commands.CommandMerge;
 import nl.tudelft.in4303.grading.commands.CommandRemote;
 import nl.tudelft.in4303.grading.github.GitHubGrader;
+import nl.tudelft.in4303.grading.github.GitHubService;
 import nl.tudelft.in4303.grading.language.LanguageGrader;
 import nl.tudelft.in4303.grading.local.LocalGrader;
 import nl.tudelft.in4303.grading.tests.TestsGrader;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConfigurationUtils;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.eclipse.egit.github.core.PullRequest;
 
 import java.io.File;
+import java.io.IOException;
 
 public class Reporter {
     public static void main(String[] args) {
         CommandLocal commandLocal = new CommandLocal();
         CommandRemote commandRemote = new CommandRemote();
+        CommandMerge commandMerge = new CommandMerge();
 
         JCommander jCommander = new JCommander();
         jCommander.addCommand("local", commandLocal);
         jCommander.addCommand("remote", commandRemote);
+        jCommander.addCommand("merge", commandMerge);
         jCommander.parse(args);
 
         try {
@@ -29,6 +38,9 @@ public class Reporter {
                     break;
                 case "remote":
                     gradeRemote(createReporter(commandRemote), commandRemote);
+                    break;
+                case "merge":
+                    merge(commandMerge);
                     break;
             }
         } catch (Exception e) {
@@ -81,6 +93,23 @@ public class Reporter {
             grader.grade(reporter, commandRemote.getProject(), commandRemote.getBranch(), commandRemote.getRepository(), commandRemote.getOrganisation());
         } else {
             grader.feedback(reporter, commandRemote.getProject(), commandRemote.getBranch(), commandRemote.getRepository(), commandRemote.getOrganisation(), -1);
+        }
+    }
+
+    /**
+     * Merge all open pull requests against given branch
+     *
+     * @param commandMerge
+     * @throws ConfigurationException
+     * @throws IOException
+     */
+    private static void merge(CommandMerge commandMerge) throws ConfigurationException, IOException {
+        Configuration configuration = new PropertiesConfiguration("gh.properties");
+
+        GitHubService gitHubService = new GitHubService(configuration.getString("token"));
+
+        for (PullRequest pullRequest : gitHubService.getPullRequests("TUDelft-IN4303-2015", "student-(.*)", commandMerge.getBranch(), "open")) {
+            gitHubService.merge(pullRequest.getBase().getRepo(), pullRequest.getNumber(), "Merge submission");
         }
     }
 }
