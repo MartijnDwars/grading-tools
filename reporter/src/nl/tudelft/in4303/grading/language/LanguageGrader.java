@@ -54,8 +54,13 @@ public class LanguageGrader extends Grader {
 		
 		try {
 			TestRunner runner = new TestRunner(project.getAbsolutePath(), "testrunnerfile");
+
+			// TODO: For lab 10-12 we also need Jasmin. Put this in a configuration/make part of grading-releng?
+			runner.registerLanguage("/Users/martijn/Projects/spoofax-jasmin/org.spoofax.lang.jasmin/include");
+
 			runner.registerSPT();
 			runner.registerLanguage(include.getAbsolutePath());
+
 			
 			logger.info("running tests");
 

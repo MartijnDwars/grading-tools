@@ -18,6 +18,13 @@ import org.eclipse.egit.github.core.PullRequest;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class Reporter {
     public static void main(String[] args) {
@@ -107,8 +114,25 @@ public class Reporter {
         Configuration configuration = new PropertiesConfiguration("gh.properties");
 
         GitHubService gitHubService = new GitHubService(configuration.getString("token"));
+        gitHubService.runDry(commandMerge.isDryRun());
+
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss");
+        format.setTimeZone(TimeZone.getTimeZone("CET"));
 
         for (PullRequest pullRequest : gitHubService.getPullRequests("TUDelft-IN4303-2015", "student-(.*)", commandMerge.getBranch(), "open")) {
+            LocalDate deadline = LocalDate.of(2015, 12, 6+1);
+            LocalDate createdAt = pullRequest.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            if (createdAt.isBefore(deadline)) {
+                System.out.println("Merging #" + pullRequest.getNumber() + " for " + pullRequest.getBase().getRepo().getName() + " created at " + format.format(pullRequest.getCreatedAt()));
+            } else {
+                int lateDays = Period.between(deadline, createdAt).getDays() + 1;
+
+                System.out.println("Merging #" + pullRequest.getNumber() + " for " + pullRequest.getBase().getRepo().getName() + " created at " + format.format(pullRequest.getCreatedAt()) + " (late days: " + lateDays + ")");
+
+                gitHubService.addComment(pullRequest, "This submission costs you " + lateDays + " late day(s).");
+            }
+
             gitHubService.merge(pullRequest.getBase().getRepo(), pullRequest.getNumber(), "Merge submission");
         }
     }

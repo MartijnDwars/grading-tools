@@ -10,6 +10,9 @@ public class CommandMerge {
     @Parameter(description = "<branch>")
     protected List<String> args;
 
+    @Parameter(names = {"-d", "--dryrun"}, description = "No GitHub interaction")
+    protected boolean dryrun = false;
+
     /**
      * Branch to merge
      *
@@ -17,5 +20,14 @@ public class CommandMerge {
      */
     public String getBranch() {
         return args.get(0);
+    }
+
+    /**
+     * Do not interact with GitHub (i.e. no merging, no comment)
+     *
+     * @return
+     */
+    public boolean isDryRun() {
+        return dryrun;
     }
 }

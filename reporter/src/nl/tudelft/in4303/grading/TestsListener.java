@@ -1,10 +1,6 @@
 package nl.tudelft.in4303.grading;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import org.metaborg.spt.listener.ITestReporter;
 import org.slf4j.Logger;
@@ -70,7 +66,7 @@ public class TestsListener implements ITestReporter {
 				logger.trace("valid test {} in suite {}", description, testsuiteFile);
 			} else {
 				invalid.add(key);
-				logger.debug("invalid test {} in suite {}", description, testsuiteFile);
+				logger.debug("invalid test '{}' in suite {}", description, testsuiteFile);
 			}
 		} else {
 			if (succeeded) {

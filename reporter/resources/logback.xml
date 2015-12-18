@@ -10,7 +10,7 @@
 
   <logger
     name="nl.tudelft.in4303.grading"
-    level="debug"
+    level="trace"
     additivity="false"
   >
     <appender-ref ref="stdout" />

@@ -32,14 +32,16 @@ token=<your-token>
 ```
 Reporter local <solution> <project> [options]
 Reporter remote <solution> <project> <organisation> <repository> <branch> [options]
+Reporter merge <branch>
 
 Options:
   -g --grade    Create detailed report
-  -d --dryrun   No GitHub interaction (only available in remote command)
+  -d --dryrun   No GitHub interaction (only available in 'remote' and 'merge' command)
 ```
 
-Two commands are supported: `local` and `remote`. Both commands require the path to the solution and project as the
-first two arguments. In the remote command the project path is taken to be relative to the root of the repository.
+Three commands are supported: `local`, `remote`, `merge`. The first two require the path to the solution and project as
+the first two arguments. In the remote command the project path is taken to be relative to the root of the repository.
+The `merge` command will merge all open PRs for the given branch without grading.
 
 ### Example
 
@@ -74,6 +76,13 @@ in the `grading-releng` repo. For example, the complete command may look like:
 java -cp "grading-releng/grading-tools/reporter/target/reporter-1.5.0-SNAPSHOT.jar:grading-releng/spt/org.strategoxt.imp.testing/" nl.tudelft.in4303.grading.Reporter remote ~/grading/lab1/grading MiniJava-tests-syntax TUDelft-IN4303-2015 student-johndoe assignment1
 ```
 
-# Fix erroneous submissions
+## Processes
+
+### Final grade an assignment
+
+1. Merge open submissions: `Reporter merge assignment7`. This will post a comment for the late days.
+2. Run the grader in the cloud.
+
+### Fix erroneous submissions
 
 Errors in student submissions (e.g. parse errors in SPT) are quite common. Some of these need to be fixed manually in order to let the grading tool succeed. Apply those fixes in a separate branch, e.g. `assignment1-fix`, create a pull request against the original branch, merge this pull request, and run the grading tool again.

@@ -49,70 +49,89 @@ public class GitHubService {
 		dryrun = false;
 	}
 
-	protected void runDry(boolean dryrun) {
+	public void runDry(boolean dryrun) {
 		this.dryrun = dryrun;
 	}
 
-	protected void addComment(PullRequest request, String comment) throws IOException {
-		if (dryrun)
+	public void addComment(PullRequest request, String comment) throws IOException {
+		if (dryrun) {
 			System.out.println(comment);
-		else
+		} else {
 			issueService.createComment(request.getBase().getRepo(), request.getNumber(), comment);
+		}
 	}
 
+	/**
+	 * Retrieve all open, non-graded pull requests
+	 *
+	 * @param org
+	 * @param pattern
+	 * @param state
+	 * @return
+	 * @throws IOException
+	 */
 	protected Collection<PullRequest> getPullRequests(String org, String pattern, String state) throws IOException {
-
 		List<Repository> orgRepositories = repoService.getOrgRepositories(org);
+		List<PullRequest> requests = new ArrayList<>();
 
-		// Retrieve all open, non-graded pull requests
-		List<PullRequest> requests = new ArrayList<PullRequest>();
-		for (Repository repo : orgRepositories)
-			if (repo.getName().matches(pattern))
+		for (Repository repo : orgRepositories) {
+			if (repo.getName().matches(pattern)) {
 				if (state.equals("merged")) {
-					for (PullRequest closed : pullRequestService.getPullRequests(repo, "closed"))
-						if (pullRequestService.isMerged(repo, closed.getNumber()))
+					for (PullRequest closed : pullRequestService.getPullRequests(repo, "closed")) {
+						if (pullRequestService.isMerged(repo, closed.getNumber())) {
 							requests.add(closed);
-				} else
+						}
+					}
+				} else {
 					requests.addAll(pullRequestService.getPullRequests(repo, state));
+				}
+			}
+		}
 
 		return requests;
 	}
 
 	public Collection<PullRequest> getPullRequests(String org, String pattern, String branch, String state) throws IOException {
-
 		List<Repository> orgRepositories = repoService.getOrgRepositories(org);
+		List<PullRequest> requests = new ArrayList<>();
 
-		List<PullRequest> requests = new ArrayList<PullRequest>();
-		for (Repository repo : orgRepositories)
-			if (repo.getName().matches(pattern))
-				for (PullRequest request: pullRequestService.getPullRequests(repo, state))
-					if (branch.equals(request.getBase().getRef()))
+		for (Repository repo : orgRepositories) {
+			if (repo.getName().matches(pattern)) {
+				for (PullRequest request : pullRequestService.getPullRequests(repo, state)) {
+					if (branch.equals(request.getBase().getRef())) {
 						requests.add(request);
+					}
+				}
+			}
+		}
 
 		return requests;
 	}
 
 	protected Collection<PullRequest> getLatestPullRequests(String org, String pattern, String branch, String state) throws IOException {
-
 		List<Repository> orgRepositories = repoService.getOrgRepositories(org);
-
 		Map<String, PullRequest> requests = new Hashtable<>();
+
 		for (Repository repo : orgRepositories) {
 			String name = repo.getName();
-			if (name.matches(pattern))
-				for (PullRequest request: pullRequestService.getPullRequests(repo, state))
-					if (branch.equals(request.getBase().getRef()) && ( !requests.containsKey(name) || requests.get(name).getNumber() < request.getNumber()) )
+			if (name.matches(pattern)) {
+				for (PullRequest request : pullRequestService.getPullRequests(repo, state)) {
+					if (branch.equals(request.getBase().getRef()) && (!requests.containsKey(name) || requests.get(name).getNumber() < request.getNumber())) {
 						requests.put(name, request);
+					}
+				}
+			}
 		}
 
 		return requests.values();
 	}
-	protected void setStatus(Repository repo, String sha, ExtendedCommitStatus status) throws IOException {
-		if (dryrun)
-			System.out.println(status.getDescription());
-		else
-			commitService.createStatus(repo, sha, status);
 
+	protected void setStatus(Repository repo, String sha, ExtendedCommitStatus status) throws IOException {
+		if (dryrun) {
+			System.out.println(status.getDescription());
+		} else {
+			commitService.createStatus(repo, sha, status);
+		}
 	}
 
 	protected Git checkout(Repository repo, RefSpec refSpec, File tmpDir)
@@ -137,12 +156,12 @@ public class GitHubService {
 
 	public boolean hasState(PullRequest pullRequest, String context, String expected) throws IOException {
 		List<CombinedCommitState> combinedStates = commitService
-				.getCombinedStatus(pullRequest.getBase().getRepo(), pullRequest
-						.getHead().getSha());
+			.getCombinedStatus(pullRequest.getBase().getRepo(), pullRequest.getHead().getSha());
 
 		for (CombinedCommitState state : combinedStates) {
-			if (state.hasState(context, expected))
+			if (state.hasState(context, expected)) {
 				return true;
+			}
 		}
 
 		return false;
@@ -150,21 +169,23 @@ public class GitHubService {
 
 	public boolean hasState(PullRequest pullRequest, String context) throws IOException {
 		List<CombinedCommitState> combinedStates = commitService
-				.getCombinedStatus(pullRequest.getBase().getRepo(), pullRequest
-						.getHead().getSha());
+			.getCombinedStatus(pullRequest.getBase().getRepo(), pullRequest.getHead().getSha());
 
 		for (CombinedCommitState state : combinedStates) {
-			if (state.hasState(context))
+			if (state.hasState(context)) {
 				return true;
+			}
 		}
 
 		return false;
 	}
+
 	public MergeStatus merge(Repository repo, int number, String string) throws IOException {
-		if (dryrun)
+		if (dryrun) {
 			return null;
-		else
+		} else {
 			return pullRequestService.merge(repo, number, string);
+		}
 	}
 
 	public boolean isMerged(Repository repo, PullRequest request) throws IOException {
