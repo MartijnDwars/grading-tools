@@ -22,8 +22,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.TimeZone;
 
 public class Reporter {
@@ -120,7 +118,7 @@ public class Reporter {
         format.setTimeZone(TimeZone.getTimeZone("CET"));
 
         for (PullRequest pullRequest : gitHubService.getPullRequests("TUDelft-IN4303-2015", "student-(.*)", commandMerge.getBranch(), "open")) {
-            LocalDate deadline = LocalDate.of(2015, 12, 6+1);
+            LocalDate deadline = deadline(commandMerge.getBranch());
             LocalDate createdAt = pullRequest.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
             if (createdAt.isBefore(deadline)) {
@@ -134,6 +132,23 @@ public class Reporter {
             }
 
             gitHubService.merge(pullRequest.getBase().getRepo(), pullRequest.getNumber(), "Merge submission");
+        }
+    }
+
+    /**
+     * Get date of the deadline for the given assignment
+     *
+     * @param assignment
+     * @return
+     */
+    private static LocalDate deadline(String assignment) {
+        switch (assignment) {
+            case "assignment11":
+                return LocalDate.of(2015, 12, 13+1);
+            case "assignment12":
+                return LocalDate.of(2015, 12, 20+1);
+            default:
+                throw new IllegalArgumentException("Assignment " + assignment + " now known.");
         }
     }
 }
