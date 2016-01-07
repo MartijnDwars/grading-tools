@@ -61,7 +61,7 @@ public class Reporter {
      */
     public static Grader createReporter(AbstractCommand command) {
         if (ConfigurationUtils.locate(command.getSolution(), "tests.xml") != null) {
-            return new LanguageGrader(command.getSolution());
+            return new LanguageGrader(command.getSolution(), command.getLanguages());
         } else {
             return new TestsGrader(command.getSolution());
         }

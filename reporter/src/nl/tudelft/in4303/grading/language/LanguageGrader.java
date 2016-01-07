@@ -14,8 +14,12 @@ import org.metaborg.spoofax.testrunner.core.TestRunner;
  * A grader that uses tests to grade a student's language
  */
 public class LanguageGrader extends Grader {
-	public LanguageGrader(String solution) {
+	private List<String> languages;
+
+	public LanguageGrader(String solution, List<String> languages) {
 		super(new File(solution, "/tests.xml"));
+
+		this.languages = languages;
 	}
 
 	@Override
@@ -55,12 +59,12 @@ public class LanguageGrader extends Grader {
 		try {
 			TestRunner runner = new TestRunner(project.getAbsolutePath(), "testrunnerfile");
 
-			// TODO: For lab 10-12 we also need Jasmin. Put this in a configuration/make part of grading-releng?
-			runner.registerLanguage("/Users/martijn/Projects/spoofax-jasmin/org.spoofax.lang.jasmin/include");
-
 			runner.registerSPT();
 			runner.registerLanguage(include.getAbsolutePath());
 
+			for (String language : languages) {
+				runner.registerLanguage(language);
+			}
 			
 			logger.info("running tests");
 
@@ -74,8 +78,8 @@ public class LanguageGrader extends Grader {
 			}
 			
 			listener.exit();
-			return result;
 
+			return result;
 		} catch (final ConfigurationException e) {
 			logger.error("SPT configuration", e);
 			throw new RuntimeException(e);
