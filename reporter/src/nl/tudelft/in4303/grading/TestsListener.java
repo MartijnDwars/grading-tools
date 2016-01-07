@@ -119,7 +119,13 @@ public class TestsListener implements ITestReporter {
 	}
 
 	public int getPassed(String spt) {
-		return passed.get(spt);
+		Integer count = passed.get(spt);
+
+		if (null == count) {
+			throw new IllegalArgumentException("Could not find passed count for spt file " + spt);
+		}
+
+		return count;
 	}
 
 	public int getMissed(String spt) {
